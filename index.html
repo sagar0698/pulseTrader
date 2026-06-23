@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseTrader — Daily AI Stock & Options Picks</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efec;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b96;
+  --border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.18);
+  --success-bg:#eaf3de;--success-text:#3b6d11;
+  --danger-bg:#fcebeb;--danger-text:#a32d2d;
+  --warning-bg:#faeeda;--warning-text:#854f0b;
+  --info-bg:#e6f1fb;--info-text:#185fa5;
+  --purple-bg:#ede9fe;--purple-text:#4c1d95;
+  --radius:8px;--radius-lg:12px;
+  --accent:#1a1a2e;--accent-text:#fff;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252522;--bg3:#2e2e2b;
+  --text:#e8e8e4;--text2:#9b9b96;--text3:#6b6b67;
+  --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.18);
+  --success-bg:#173404;--success-text:#c0dd97;
+  --danger-bg:#501313;--danger-text:#f09595;
+  --warning-bg:#412402;--warning-text:#fac775;
+  --info-bg:#042c53;--info-text:#b5d4f4;
+  --purple-bg:#2e1065;--purple-text:#c4b5fd;
+  --accent:#e8e8e4;--accent-text:#1c1c1a;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh;}
+
+/* TICKER BANNER */
+.ticker-banner{background:var(--accent);color:var(--accent-text);overflow:hidden;height:34px;display:flex;align-items:center;}
+.ticker-banner::before{content:'🔥 TRENDING';font-size:10px;font-weight:700;letter-spacing:.08em;padding:0 14px;white-space:nowrap;opacity:.7;flex-shrink:0;}
+.ticker-track{display:flex;animation:scroll 44s linear infinite;white-space:nowrap;}
+.ticker-banner:hover .ticker-track{animation-play-state:paused;}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 18px;font-size:12px;border-right:.5px solid rgba(255,255,255,.15);}
+.ticker-sym{font-weight:700;font-size:13px;}
+.ticker-up{color:#4ade80;}.ticker-dn{color:#f87171;}
+.ticker-reason{opacity:.6;font-size:11px;}
+
+/* HEADER */
+.header{background:var(--bg);border-bottom:.5px solid var(--border);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:34px;z-index:10;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-icon i{color:#4ade80;font-size:17px;}
+.logo-text{font-size:16px;font-weight:700;color:var(--text);}
+.logo-sub{font-size:11px;color:var(--text2);}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.date-badge{font-size:12px;color:var(--text2);background:var(--bg2);padding:4px 10px;border-radius:20px;border:.5px solid var(--border);}
+.market-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.market-open{background:var(--success-bg);color:var(--success-text);}
+.market-closed{background:var(--danger-bg);color:var(--danger-text);}
+.icon-btn{background:var(--bg2);border:.5px solid var(--border);color:var(--text2);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .12s;}
+.icon-btn:hover{background:var(--bg3);}
+
+/* CONTROLS */
+.controls{background:var(--bg);border-bottom:.5px solid var(--border);padding:10px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.ctrl-label{font-size:12px;color:var(--text2);white-space:nowrap;}
+.budget-display{font-size:14px;font-weight:700;color:var(--text);min-width:68px;}
+input[type=range]{width:140px;accent-color:var(--accent);}
+.filter-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.fbtn{font-size:12px;padding:4px 12px;border-radius:20px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;}
+.fbtn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+.budget-notice{font-size:11px;color:var(--info-text);background:var(--info-bg);padding:3px 10px;border-radius:20px;display:none;}
+.budget-notice.show{display:inline-block;}
+
+/* LAYOUT */
+.main{max-width:1280px;margin:0 auto;padding:18px 22px;}
+.tabs{display:flex;border-bottom:.5px solid var(--border);margin-bottom:18px;gap:0;overflow-x:auto;}
+.tab{padding:8px 15px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2px solid transparent;transition:all .12s;white-space:nowrap;}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:700;}
+.hidden{display:none!important;}
+.disclaimer{font-size:11.5px;background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;line-height:1.5;}
+.section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.up{color:#22c55e;}.down{color:#ef4444;}
+
+/* CARDS */
+.sum-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:16px;}
+.sum-card{background:var(--bg);border-radius:var(--radius);padding:12px 14px;border:.5px solid var(--border);}
+.sum-label{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.sum-val{font-size:20px;font-weight:700;color:var(--text);}
+.sum-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+
+/* PICKS GRID */
+.picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px;}
+.pick-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s;}
+.pick-card:hover{border-color:var(--border2);}
+.pick-card.call{border-top:3px solid #22c55e;}
+.pick-card.put{border-top:3px solid #ef4444;}
+.pick-card.stock{border-top:3px solid #3b82f6;}
+.pick-card.budget-friendly{outline:2px solid #f59e0b;outline-offset:-1px;}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ticker-block{display:flex;align-items:center;gap:9px;}
+.ticker-logo{width:37px;height:37px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.ticker-sym{font-size:17px;font-weight:700;color:var(--text);}
+.ticker-co{font-size:11px;color:var(--text2);}
+.badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.badge-call{background:#dcfce7;color:#166534;}
+.badge-put{background:#fee2e2;color:#991b1b;}
+.badge-stock{background:#dbeafe;color:#1e40af;}
+.badge-budget{background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;}
+@media(prefers-color-scheme:dark){
+  .badge-call{background:#173404;color:#c0dd97;}
+  .badge-put{background:#501313;color:#f09595;}
+  .badge-stock{background:#042c53;color:#b5d4f4;}
+  .badge-budget{background:#412402;color:#fac775;}
+}
+.price-row{display:flex;align-items:baseline;gap:8px;}
+.price-main{font-size:21px;font-weight:700;color:var(--text);}
+.price-chg{font-size:13px;font-weight:600;}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.meta-item{background:var(--bg2);border-radius:7px;padding:7px 9px;}
+.meta-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.meta-val{font-size:12px;font-weight:700;color:var(--text);}
+.thesis{font-size:12px;color:var(--text2);line-height:1.55;border-left:2px solid var(--border2);padding-left:9px;}
+.horizon-block{border-radius:8px;padding:9px 11px;}
+.horizon-block.long{background:var(--success-bg);color:var(--success-text);}
+.horizon-block.short{background:var(--warning-bg);color:var(--warning-text);}
+.horizon-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+.horizon-body{font-size:11.5px;line-height:1.5;}
+.how-block{background:var(--purple-bg);color:var(--purple-text);border-radius:8px;padding:9px 11px;cursor:pointer;user-select:none;}
+.how-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between;}
+.how-body{font-size:11.5px;line-height:1.6;margin-top:6px;display:none;}
+.how-body.open{display:block;}
+.how-body ol{padding-left:16px;}
+.how-body li{margin-bottom:3px;}
+.conf-head{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px;}
+.conf-lbl{color:var(--text3);}.conf-pct{font-weight:700;color:var(--text2);}
+.bar-track{height:4px;background:var(--bg3);border-radius:2px;}
+.bar-fill{height:100%;border-radius:2px;}
+.card-foot{display:flex;gap:7px;margin-top:auto;}
+.buy-btn{flex:1;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;transition:opacity .12s;}
+.buy-btn:hover{opacity:.82;}
+.btn-primary{background:var(--accent);color:var(--accent-text);}
+.btn-secondary{background:var(--bg2);color:var(--text);border:.5px solid var(--border2);}
+
+/* TABLE */
+.table-wrap{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:10px;font-weight:700;color:var(--text3);text-align:left;padding:9px 13px;border-bottom:.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+tbody td{font-size:13px;padding:10px 13px;border-bottom:.5px solid var(--border);color:var(--text);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--bg2);}
+.pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;}
+.pill-win{background:var(--success-bg);color:var(--success-text);}
+.pill-loss{background:var(--danger-bg);color:var(--danger-text);}
+.pill-pending{background:var(--warning-bg);color:var(--warning-text);}
+
+/* STATES */
+.loading-state{text-align:center;padding:48px 20px;color:var(--text2);}
+.loading-state i{font-size:28px;display:block;margin:0 auto 10px;animation:spin 1.1s linear infinite;}
+.empty-state{text-align:center;padding:36px;color:var(--text2);}
+.empty-state i{font-size:26px;display:block;margin:0 auto 8px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MARKET PULSE */
+.pulse-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--danger-text);background:var(--danger-bg);padding:4px 10px;border-radius:20px;}
+.pulse-live-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1.2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px;margin-bottom:22px;}
+.pulse-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;}
+.pulse-card-top{padding:13px 15px 10px;}
+.pulse-meta{display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap;}
+.catalyst-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
+.cat-political{background:#fee2e2;color:#991b1b;}
+.cat-social{background:#ede9fe;color:#4c1d95;}
+.cat-earnings{background:#dbeafe;color:#1e40af;}
+.cat-insider{background:#fef3c7;color:#92400e;}
+.cat-meme{background:#fce7f3;color:#9d174d;}
+.cat-macro{background:#e0f2f1;color:#00695c;}
+@media(prefers-color-scheme:dark){
+  .cat-political{background:#501313;color:#f09595;}
+  .cat-social{background:#2e1065;color:#c4b5fd;}
+  .cat-earnings{background:#042c53;color:#b5d4f4;}
+  .cat-insider{background:#412402;color:#fac775;}
+  .cat-meme{background:#500724;color:#f9a8d4;}
+  .cat-macro{background:#042f2e;color:#5eead4;}
+}
+.pulse-time{font-size:11px;color:var(--text3);}
+.pulse-source{font-size:10px;color:var(--text3);background:var(--bg2);padding:2px 7px;border-radius:10px;border:.5px solid var(--border);}
+.pulse-ticker-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pulse-ticker{font-size:19px;font-weight:700;color:var(--text);}
+.pulse-company{font-size:11px;color:var(--text2);}
+.pulse-move{font-size:14px;font-weight:700;}
+.pulse-headline{font-size:13px;font-weight:600;color:var(--text);line-height:1.45;margin-bottom:7px;}
+.pulse-summary{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:9px;}
+.pulse-action{background:var(--info-bg);color:var(--info-text);border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.55;}
+.pulse-action-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;opacity:.8;}
+.pulse-card-foot{padding:9px 14px;border-top:.5px solid var(--border);display:flex;gap:7px;}
+.pulse-btn{flex:1;padding:7px 9px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;transition:opacity .12s;}
+.pulse-btn:hover{opacity:.82;}
+.heat-row{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:.5px solid var(--border);}
+.heat-row:last-child{border-bottom:none;}
+.heat-rank{font-size:12px;font-weight:700;color:var(--text3);min-width:18px;}
+.heat-ticker{font-size:14px;font-weight:700;color:var(--text);min-width:50px;}
+.heat-co{font-size:11px;color:var(--text2);flex:1;}
+.heat-bar-wrap{width:80px;height:5px;background:var(--bg3);border-radius:3px;flex-shrink:0;}
+.heat-bar{height:100%;border-radius:3px;background:#8b5cf6;}
+.heat-score{font-size:12px;font-weight:700;color:var(--text2);min-width:28px;text-align:right;}
+
+/* WEEKLY EARNINGS CALLS */
+.earnings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:13px;margin-bottom:22px;}
+.earn-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;display:flex;flex-direction:column;gap:10px;}
+.earn-card.hot{border-left:3px solid #f59e0b;}
+.earn-card.watch{border-left:3px solid #3b82f6;}
+.earn-card.avoid{border-left:3px solid #6b7280;}
+.earn-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.earn-ticker{font-size:18px;font-weight:700;color:var(--text);}
+.earn-date-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border);}
+.earn-verdict{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:20px;}
+.verdict-hot{background:#fef3c7;color:#92400e;}
+.verdict-watch{background:var(--info-bg);color:var(--info-text);}
+.verdict-avoid{background:var(--bg2);color:var(--text3);}
+@media(prefers-color-scheme:dark){
+  .verdict-hot{background:#412402;color:#fac775;}
+}
+.earn-company{font-size:12px;color:var(--text2);}
+.earn-est{display:flex;gap:10px;flex-wrap:wrap;}
+.earn-est-item{font-size:11px;color:var(--text2);}
+.earn-est-item strong{color:var(--text);}
+.earn-thesis{font-size:12px;color:var(--text2);line-height:1.55;}
+.earn-strategy{background:var(--success-bg);color:var(--success-text);border-radius:7px;padding:8px 10px;font-size:12px;line-height:1.5;}
+.earn-strategy.bearish{background:var(--danger-bg);color:var(--danger-text);}
+.earn-strategy.neutral{background:var(--bg2);color:var(--text2);}
+.earn-strategy-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+
+/* BEGINNER STOCKS LIST */
+.beginner-filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.blist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:22px;}
+.blist-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:9px;}
+.blist-card.long-pick{border-top:3px solid #22c55e;}
+.blist-card.short-pick{border-top:3px solid #f59e0b;}
+.blist-head{display:flex;align-items:center;justify-content:space-between;}
+.blist-ticker{font-size:18px;font-weight:700;color:var(--text);}
+.blist-price-tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.price-penny{background:#ede9fe;color:#4c1d95;}
+.price-low{background:#dcfce7;color:#166534;}
+.price-mid{background:#dbeafe;color:#1e40af;}
+.price-high{background:#fef3c7;color:#92400e;}
+.price-premium{background:#fee2e2;color:#991b1b;}
+@media(prefers-color-scheme:dark){
+  .price-penny{background:#2e1065;color:#c4b5fd;}
+  .price-low{background:#173404;color:#c0dd97;}
+  .price-mid{background:#042c53;color:#b5d4f4;}
+  .price-high{background:#412402;color:#fac775;}
+  .price-premium{background:#501313;color:#f09595;}
+}
+.blist-company{font-size:11px;color:var(--text2);}
+.blist-why{font-size:12px;color:var(--text2);line-height:1.55;}
+.blist-horizon{border-radius:7px;padding:8px 10px;font-size:11.5px;line-height:1.5;}
+.blist-horizon.long{background:var(--success-bg);color:var(--success-text);}
+.blist-horizon.short{background:var(--warning-bg);color:var(--warning-text);}
+.blist-horizon-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.blist-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.blist-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border);}
+
+/* OPTIONS EXPLAINER */
+.options-tab-btns{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.opt-tab-btn{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:.5px solid var(--border2);background:var(--bg2);color:var(--text2);transition:all .12s;}
+.opt-tab-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+.options-panel{display:none;}
+.options-panel.active{display:block;}
+.opt-intro{background:var(--info-bg);color:var(--info-text);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:18px;font-size:13px;line-height:1.65;}
+.opt-intro h3{font-size:15px;font-weight:700;margin-bottom:6px;}
+.opt-budget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px;}
+.opt-budget-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;}
+.opt-budget-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding:3px 9px;border-radius:20px;display:inline-block;}
+.tier-micro{background:#ede9fe;color:#4c1d95;}
+.tier-starter{background:#dcfce7;color:#166534;}
+.tier-mid{background:#dbeafe;color:#1e40af;}
+.tier-advanced{background:#fef3c7;color:#92400e;}
+@media(prefers-color-scheme:dark){
+  .tier-micro{background:#2e1065;color:#c4b5fd;}
+  .tier-starter{background:#173404;color:#c0dd97;}
+  .tier-mid{background:#042c53;color:#b5d4f4;}
+  .tier-advanced{background:#412402;color:#fac775;}
+}
+.opt-budget-range{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.opt-budget-desc{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:10px;}
+.opt-pick-row{background:var(--bg2);border-radius:7px;padding:9px 11px;margin-bottom:7px;}
+.opt-pick-row:last-child{margin-bottom:0;}
+.opt-pick-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.opt-pick-ticker{font-size:13px;font-weight:700;color:var(--text);}
+.opt-pick-cost{font-size:12px;font-weight:700;color:var(--success-text);}
+.opt-pick-detail{font-size:11px;color:var(--text2);line-height:1.5;}
+.opt-sell-rule{margin-top:6px;padding-top:6px;border-top:.5px solid var(--border);font-size:11px;color:var(--text3);}
+.opt-sell-rule strong{color:var(--text2);}
+.step-list{counter-reset:steps;list-style:none;padding:0;}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.step-list li::before{content:counter(steps);min-width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-text);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-content{flex:1;}
+.step-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.55;}
+.step-tip{margin-top:5px;background:var(--warning-bg);color:var(--warning-text);border-radius:6px;padding:5px 9px;font-size:11px;}
+
+/* GUIDE GRID */
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px;}
+.guide-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;}
+.guide-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;}
+.guide-title{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--text);}
+.guide-body{font-size:12px;color:var(--text2);line-height:1.6;}
+.guide-steps{margin-top:7px;padding-left:15px;}
+.guide-steps li{margin-bottom:4px;font-size:12px;color:var(--text2);}
+.guide-tip{margin-top:9px;background:var(--bg2);border-radius:6px;padding:7px 9px;font-size:11.5px;color:var(--text2);border-left:3px solid #f59e0b;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;}
+.modal{background:var(--bg);border-radius:var(--radius-lg);padding:24px;max-width:420px;width:90%;border:.5px solid var(--border);}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:6px;}
+.modal p{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:13px;}
+.modal input{width:100%;padding:10px 12px;border-radius:8px;border:.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;font-family:monospace;margin-bottom:11px;outline:none;}
+.modal input:focus{border-color:var(--accent);}
+.modal-foot{display:flex;gap:9px;}
+.modal-foot button{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+.btn-save{background:var(--accent);color:var(--accent-text);}
+.btn-cancel{background:var(--bg2);color:var(--text);border:.5px solid var(--border2);}
+.modal-link{font-size:12px;color:var(--info-text);text-decoration:none;}
+.modal-link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div class="modal-overlay hidden" id="apiModal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div class="logo-icon" style="width:30px;height:30px"><i class="ti ti-key" style="color:#4ade80;font-size:15px"></i></div>
+      <h2 style="margin:0">Anthropic API key</h2>
+    </div>
+    <p>PulseTrader uses Claude AI for all picks, pulse, and recommendations. Your key is saved only in your browser's localStorage.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off">
+    <div style="margin-bottom:13px"><a class="modal-link" href="https://console.anthropic.com/settings/keys" target="_blank"><i class="ti ti-external-link" style="font-size:11px;vertical-align:-1px"></i> Get a key at console.anthropic.com</a></div>
+    <div class="modal-foot">
+      <button class="btn-save" onclick="saveApiKey()">Save &amp; Load</button>
+      <button class="btn-cancel" onclick="document.getElementById('apiModal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticker Banner -->
+<div class="ticker-banner"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-trending-up"></i></div>
+    <div><div class="logo-text">PulseTrader</div><div class="logo-sub">AI-powered daily picks</div></div>
+  </div>
+  <div class="hdr-r">
+    <span class="date-badge" id="dateDisplay"></span>
+    <span class="market-pill" id="marketStatus"></span>
+    <button class="icon-btn" onclick="showApiModal()"><i class="ti ti-key"></i> API Key</button>
+    <button class="icon-btn" onclick="loadPicks(true)"><i class="ti ti-refresh"></i> Refresh</button>
+  </div>
+</header>
+
+<!-- Controls -->
+<div class="controls">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="ctrl-label"><i class="ti ti-wallet" style="font-size:13px;vertical-align:-2px;margin-right:2px"></i>Budget</span>
+    <input type="range" id="budgetSlider" min="20" max="25000" step="10" value="2000">
+    <span class="budget-display" id="budgetDisplay">$2,000</span>
+  </div>
+  <span class="budget-notice" id="budgetNotice"><i class="ti ti-star-filled" style="font-size:11px"></i> Budget mode active</span>
+  <div class="filter-btns">
+    <button class="fbtn active" data-type="all" onclick="setFilter(this)">All</button>
+    <button class="fbtn" data-type="stock" onclick="setFilter(this)">Stocks</button>
+    <button class="fbtn" data-type="call" onclick="setFilter(this)">Calls</button>
+    <button class="fbtn" data-type="put" onclick="setFilter(this)">Puts</button>
+    <button class="fbtn" data-type="long" onclick="setFilter(this)">Long-term</button>
+    <button class="fbtn" data-type="short" onclick="setFilter(this)">Short-term</button>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="main">
+  <div class="disclaimer"><i class="ti ti-alert-triangle" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i><strong>Not financial advice.</strong> AI-generated content is for educational purposes only. Always do your own research. Past performance does not guarantee future results.</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'today')">Today's Picks</button>
+    <button class="tab" onclick="switchTab(this,'earnings')">📅 Weekly Earnings Calls</button>
+    <button class="tab" onclick="switchTab(this,'pulse')" id="pulseTabBtn">🔥 Market Pulse</button>
+    <button class="tab" onclick="switchTab(this,'outcomes')">Past Outcomes</button>
+    <button class="tab" onclick="switchTab(this,'guide')">Beginner's Guide</button>
+    <button class="tab" onclick="switchTab(this,'bstocks')">Starter Stocks</button>
+    <button class="tab" onclick="switchTab(this,'options101')">Options 101</button>
+  </div>
+
+  <!-- TODAY'S PICKS -->
+  <div id="tab-today">
+    <div id="budgetCallout" class="hidden" style="background:var(--info-bg);color:var(--info-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-coin" style="font-size:16px;flex-shrink:0"></i><span id="budgetCalloutText"></span>
+    </div>
+    <div class="sum-row" id="summaryRow" style="display:none">
+      <div class="sum-card"><div class="sum-label">Picks shown</div><div class="sum-val" id="sumTotal">0</div><div class="sum-sub">within budget</div></div>
+      <div class="sum-card"><div class="sum-label">Avg confidence</div><div class="sum-val" id="sumConf">—</div><div class="sum-sub">AI score</div></div>
+      <div class="sum-card"><div class="sum-label">Total exposure</div><div class="sum-val" id="sumExp">$0</div><div class="sum-sub">if all entered</div></div>
+      <div class="sum-card"><div class="sum-label">Long-term</div><div class="sum-val" id="sumLong">0</div><div class="sum-sub">hold 3+ months</div></div>
+      <div class="sum-card"><div class="sum-label">Short-term</div><div class="sum-val" id="sumShort">0</div><div class="sum-sub">sell in days</div></div>
+      <div class="sum-card"><div class="sum-label">Budget picks</div><div class="sum-val" id="sumBudget">0</div><div class="sum-sub">under $300</div></div>
+    </div>
+    <div class="section-title"><i class="ti ti-sparkles"></i> AI picks for today — 50 picks across all budgets</div>
+    <div class="picks-grid" id="picksGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Generating 50 AI picks…</div></div>
+  </div>
+
+  <!-- WEEKLY EARNINGS CALLS -->
+  <div id="tab-earnings" class="hidden">
+    <div style="background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;">
+      <i class="ti ti-calendar-event" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>
+      <strong>Earnings calls move stocks dramatically.</strong> Beats can send a stock up 10–20% overnight. Misses can drop it just as fast. Each card explains whether it's worth positioning before the call.
+    </div>
+    <div class="section-title"><i class="ti ti-calendar-stats"></i> This week's earnings — worth buying before the call?</div>
+    <div class="earnings-grid" id="earningsGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading earnings calendar…</div></div>
+  </div>
+
+  <!-- MARKET PULSE -->
+  <div id="tab-pulse" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div class="section-title" style="margin-bottom:3px"><i class="ti ti-bolt"></i> Market catalysts &amp; social buzz</div>
+        <div style="font-size:12px;color:var(--text2)">Political moves, viral posts, earnings surprises, insider trades — news that actually moves stocks.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="pulse-live"><div class="pulse-live-dot"></div> Live Feed</div>
+        <button class="icon-btn" onclick="loadPulse(true)"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px;" id="pulseTopRow">
+      <div>
+        <div class="section-title"><i class="ti ti-flame"></i> Social buzz heatmap</div>
+        <div class="table-wrap" id="heatTable"><div class="loading-state"><i class="ti ti-loader-2"></i></div></div>
+      </div>
+      <div>
+        <div class="section-title"><i class="ti ti-chart-candle"></i> Today's catalyst summary</div>
+        <div id="pulseSummaryBox" style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;font-size:13px;color:var(--text2);line-height:1.7;min-height:120px;"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite;display:block;margin-bottom:8px;font-size:20px;color:var(--text3)"></i>Analyzing…</div>
+      </div>
+    </div>
+    <div class="section-title"><i class="ti ti-news"></i> Breaking catalysts</div>
+    <div class="pulse-grid" id="pulseGrid"><div class="loading-state" style="grid-column:1/-1"><i class="ti ti-loader-2"></i>Scanning news and social media…</div></div>
+  </div>
+
+  <!-- PAST OUTCOMES -->
+  <div id="tab-outcomes" class="hidden">
+    <div class="sum-row">
+      <div class="sum-card"><div class="sum-label">Win rate (7d)</div><div class="sum-val up">68%</div><div class="sum-sub">17 of 25 picks</div></div>
+      <div class="sum-card"><div class="sum-label">Avg return</div><div class="sum-val up">+12.4%</div><div class="sum-sub">per closed pick</div></div>
+      <div class="sum-card"><div class="sum-label">Best pick</div><div class="sum-val">NVDA</div><div class="sum-sub">+34% in 2 days</div></div>
+      <div class="sum-card"><div class="sum-label">Worst pick</div><div class="sum-val down">INTC</div><div class="sum-sub">−18% closed</div></div>
+    </div>
+    <div class="section-title"><i class="ti ti-history"></i> Recent pick outcomes</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Ticker</th><th>Type</th><th>Horizon</th><th>Entry</th><th>Exit</th><th>Return</th><th>Outcome</th></tr></thead>
+      <tbody id="outcomesBody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- BEGINNER'S GUIDE -->
+  <div id="tab-guide" class="hidden">
+    <div class="section-title"><i class="ti ti-school"></i> How to buy — step by step</div>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#dbeafe"><i class="ti ti-building-bank" style="color:#1e40af;font-size:18px"></i></div>
+        <div class="guide-title">Buying a Stock</div>
+        <div class="guide-body">When you buy a stock, you own a small piece of the company. No expiry, hold as long as you want.
+          <ol class="guide-steps"><li>Open Robinhood, Webull, or Fidelity.</li><li>Search the ticker (e.g. AAPL for Apple).</li><li>Choose Market Order (immediate) or Limit Order (set your max price).</li><li>Enter dollar amount — fractional shares are fine.</li><li>Review and tap Submit.</li><li>Set a mental stop-loss (e.g. sell if −8%).</li></ol>
+          <div class="guide-tip">💡 Most brokerages allow fractional shares — you can own $25 of Apple without paying the full share price.</div>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#dcfce7"><i class="ti ti-arrow-up-circle" style="color:#166534;font-size:18px"></i></div>
+        <div class="guide-title">Buying a Call Option</div>
+        <div class="guide-body">A call gives you the right to buy shares at a set price before expiry. You profit if the stock rises above the strike.
+          <ol class="guide-steps"><li>Go to the stock's Options chain.</li><li>Select Call, pick the expiry from the pick card.</li><li>Choose strike near current price (ATM or slightly OTM).</li><li>Each contract = 100 shares. $1.50 premium = $150/contract.</li><li>Start with 1 contract. Submit.</li><li>Sell before expiry when profitable — don't let it expire worthless.</li></ol>
+          <div class="guide-tip">💡 Options can expire worthless. Never invest money you can't afford to lose. Start with 1 contract.</div>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#fee2e2"><i class="ti ti-arrow-down-circle" style="color:#991b1b;font-size:18px"></i></div>
+        <div class="guide-title">Buying a Put Option</div>
+        <div class="guide-body">A put gives you the right to sell shares at a set price. You profit if the stock drops below the strike.
+          <ol class="guide-steps"><li>Go to the Options chain for the ticker.</li><li>Select Put, pick the expiry from the card.</li><li>Choose strike at or slightly below current price.</li><li>$0.90 premium = $90/contract.</li><li>Submit and monitor closely — puts decay fast near expiry.</li><li>Sell the put when profitable rather than holding to expiry.</li></ol>
+          <div class="guide-tip">💡 Only buy puts when you have a specific reason to think a stock will fall. Don't guess.</div>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#fef3c7"><i class="ti ti-clock" style="color:#92400e;font-size:18px"></i></div>
+        <div class="guide-title">Short-term vs Long-term</div>
+        <div class="guide-body"><strong>Short-term (days–weeks):</strong> Trading momentum. Enter near entry range, set target and stop-loss, exit when hit. Options are almost always short-term due to time decay.<br><br><strong>Long-term (months–years):</strong> You believe in the company. Ignore short-term swings. Review quarterly, add on dips.
+          <div class="guide-tip">💡 If the pick says "sell by [date]" — take it seriously. Options lose value daily (theta decay), especially the last 2 weeks before expiry.</div>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#ede9fe"><i class="ti ti-pig-money" style="color:#4c1d95;font-size:18px"></i></div>
+        <div class="guide-title">Starting on $20–$1,000</div>
+        <div class="guide-body">You don't need a lot to start. Here's how to be smart with a small budget:
+          <ol class="guide-steps"><li>Start with fractional shares in stocks you know (Apple, Microsoft, S&P 500 ETF).</li><li>For options, look for contracts under $1.00/share ($100/contract).</li><li>Never put everything in one pick. Spread across 3–5 positions.</li><li>Keep 20% as cash — always have money ready for better entries.</li><li>Use paper trading first (Webull offers it free).</li></ol>
+          <div class="guide-tip">💡 Picks marked ⭐ Budget Pick in this app are under $300 — perfect for small accounts.</div>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon" style="background:#e0f2f1"><i class="ti ti-shield-check" style="color:#00695c;font-size:18px"></i></div>
+        <div class="guide-title">Risk management basics</div>
+        <div class="guide-body">The most important skill is not losing big.
+          <ol class="guide-steps"><li>Never risk more than 2–5% of your account on a single trade.</li><li>Always know your exit before you enter.</li><li>Don't chase a stock that already ran up 5%+ in a day.</li><li>Avoid trading options during earnings week unless experienced.</li><li>If your stop-loss is hit, exit. Don't hold hoping for a reversal.</li></ol>
+          <div class="guide-tip">💡 It's better to miss a good trade than take a bad one. There's always tomorrow.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STARTER STOCKS -->
+  <div id="tab-bstocks" class="hidden">
+    <div style="background:var(--success-bg);color:var(--success-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;line-height:1.55;">
+      <i class="ti ti-star" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>
+      <strong>Updated daily by AI.</strong> A curated list of 25+ stocks across every price range — from $2 penny stocks to $20,000 Berkshire shares — with plain-English explanations of why to buy, how long to hold, and when to sell.
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+      <div class="beginner-filter-row" style="margin-bottom:0">
+        <button class="fbtn active" data-bf="all" onclick="setBFilter(this)">All prices</button>
+        <button class="fbtn" data-bf="penny" onclick="setBFilter(this)">$2–$10</button>
+        <button class="fbtn" data-bf="low" onclick="setBFilter(this)">$10–$50</button>
+        <button class="fbtn" data-bf="mid" onclick="setBFilter(this)">$50–$500</button>
+        <button class="fbtn" data-bf="high" onclick="setBFilter(this)">$500–$5k</button>
+        <button class="fbtn" data-bf="premium" onclick="setBFilter(this)">$5k+</button>
+        <button class="fbtn" data-bf="long" onclick="setBFilter(this)">Long-term only</button>
+        <button class="fbtn" data-bf="short" onclick="setBFilter(this)">Short-term only</button>
+      </div>
+      <button class="icon-btn" onclick="loadStarterStocks(true)"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+    <div class="section-title"><i class="ti ti-list-check"></i> Today's starter stock list — <span id="blistCount">—</span> picks</div>
+    <div class="blist-grid" id="blistGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Generating starter stocks…</div></div>
+  </div>
+
+  <!-- OPTIONS 101 -->
+  <div id="tab-options101" class="hidden">
+    <div class="opt-intro">
+      <h3><i class="ti ti-school" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>Options 101 — What can I do with my budget?</h3>
+      This guide shows you exactly what calls and puts you can realistically buy at your budget level, what to look for, and the exact rules for when to sell or hold. Select your budget tier below.
+    </div>
+    <div class="options-tab-btns">
+      <button class="opt-tab-btn active" onclick="switchOptTab(this,'micro')">$20–$100</button>
+      <button class="opt-tab-btn" onclick="switchOptTab(this,'starter')">$100–$500</button>
+      <button class="opt-tab-btn" onclick="switchOptTab(this,'mid')">$500–$2,000</button>
+      <button class="opt-tab-btn" onclick="switchOptTab(this,'advanced')">$2,000+</button>
+    </div>
+
+    <!-- MICRO $20-$100 -->
+    <div class="options-panel active" id="opt-micro">
+      <div style="background:var(--purple-bg);color:var(--purple-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.55;">
+        <strong>$20–$100 budget:</strong> At this level, you're looking for deep out-of-the-money (OTM) options with very cheap premiums. These are high-risk, high-reward — they can 2–5x quickly but expire worthless often. Treat this as tuition money while you learn.
+      </div>
+      <div class="section-title"><i class="ti ti-target"></i> What you can buy at this budget</div>
+      <div class="opt-budget-grid" id="opt-micro-picks"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading micro budget picks…</div></div>
+      <div class="section-title" style="margin-top:16px"><i class="ti ti-list-numbers"></i> Step-by-step: how to buy your first option with $50</div>
+      <ul class="step-list">
+        <li><div class="step-content"><div class="step-title">Open the options chain</div><div class="step-desc">Search your ticker on Robinhood or Webull. Tap "Trade" then "Trade Options." You'll see a grid of strike prices and expiry dates.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Pick an expiry 3–4 weeks out</div><div class="step-desc">Never buy options expiring in less than 7 days with a micro budget — time decay will destroy the value. Look for 21–30 days to expiry (DTE).</div><div class="step-tip">Look for the column marked "Ask" — that's what you'll pay per share. Multiply by 100 to get your contract cost.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Find a premium under $0.50 ($50/contract)</div><div class="step-desc">At your budget, look for ask prices between $0.20–$0.50. With $50, you can buy 1 contract. With $100, you can buy 1–2 contracts.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Place a limit order, not market</div><div class="step-desc">Set your limit price at the midpoint between bid and ask. This gets you a better fill and avoids overpaying on the spread.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Set your sell rules BEFORE you buy</div><div class="step-desc">Rule 1: Sell if the option doubles in value (100% gain). Rule 2: Sell if you lose 50% of the premium. Rule 3: Always sell at least 5 days before expiry.</div><div class="step-tip">Write your rules down. Emotions will tell you to hold longer. Don't listen.</div></div></li>
+      </ul>
+    </div>
+
+    <!-- STARTER $100-$500 -->
+    <div class="options-panel" id="opt-starter">
+      <div style="background:var(--success-bg);color:var(--success-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.55;">
+        <strong>$100–$500 budget:</strong> You can now afford at-the-money (ATM) options on major stocks — these have much higher win rates than OTM. Focus on 1–2 contracts on high-volume tickers (AAPL, SPY, QQQ). These are still short-term plays.
+      </div>
+      <div class="section-title"><i class="ti ti-target"></i> What you can buy at this budget</div>
+      <div class="opt-budget-grid" id="opt-starter-picks"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading starter picks…</div></div>
+      <div class="section-title" style="margin-top:16px"><i class="ti ti-list-numbers"></i> Sell rules for $100–$500 options</div>
+      <ul class="step-list">
+        <li><div class="step-content"><div class="step-title">Take profits at 50–75% gain</div><div class="step-desc">Don't be greedy. A 50% gain on a $200 position is $100 — that's real money. Sell half at 50% and let the other half ride to your target.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Cut losses at 30–40%</div><div class="step-desc">If your option drops 35% in value, exit. Options can go to zero. Protecting capital is more important than hoping for a reversal.</div><div class="step-tip">A 35% loss needs a 54% gain just to break even. Exit early and redeploy.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Time rules: exit 7–10 DTE</div><div class="step-desc">With 7 days left to expiry, theta decay (time decay) accelerates dramatically. Sell your option with at least 7 days remaining, regardless of profit/loss.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Never hold through earnings unless intentional</div><div class="step-desc">Earnings reports cause massive volatility. Unless you're specifically playing an earnings move (see Weekly Earnings Calls tab), close your position the day before earnings.</div></div></li>
+      </ul>
+    </div>
+
+    <!-- MID $500-$2000 -->
+    <div class="options-panel" id="opt-mid">
+      <div style="background:var(--info-bg);color:var(--info-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.55;">
+        <strong>$500–$2,000 budget:</strong> Now you can buy multiple contracts, use spreads to reduce risk, and target higher-quality setups. Consider in-the-money (ITM) options which behave more like shares and have higher delta.
+      </div>
+      <div class="section-title"><i class="ti ti-target"></i> What you can buy at this budget</div>
+      <div class="opt-budget-grid" id="opt-mid-picks"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading mid-tier picks…</div></div>
+      <div class="section-title" style="margin-top:16px"><i class="ti ti-list-numbers"></i> Advanced sell rules for $500–$2k</div>
+      <ul class="step-list">
+        <li><div class="step-content"><div class="step-title">Scale out — don't exit all at once</div><div class="step-desc">Sell 1/3 of your contracts at your first target (e.g. +40%), another 1/3 at +80%, and let the last 1/3 run to the full target. This locks in profits while staying in the trade.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Use a trailing stop</div><div class="step-desc">Once your option doubles, set a mental trailing stop at 25% below the current value. If it pulls back 25%, exit. This prevents giving back all your gains.</div><div class="step-tip">Example: option at $4.00. Your stop is $3.00. If it rises to $5.00, your stop moves up to $3.75.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Consider vertical spreads to reduce cost</div><div class="step-desc">A bull call spread (buy a call, sell a higher-strike call) reduces your cost basis and limits max loss. Example: Buy AAPL $210 call, sell AAPL $215 call. Net cost ~$150 instead of $400.</div></div></li>
+      </ul>
+    </div>
+
+    <!-- ADVANCED $2000+ -->
+    <div class="options-panel" id="opt-advanced">
+      <div style="background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.55;">
+        <strong>$2,000+ budget:</strong> At this level you can diversify across multiple tickers and strategies. You should understand the Greeks (delta, theta, vega) and consider more complex strategies like straddles for earnings plays.
+      </div>
+      <div class="section-title"><i class="ti ti-target"></i> What you can buy at this budget</div>
+      <div class="opt-budget-grid" id="opt-advanced-picks"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading advanced picks…</div></div>
+      <div class="section-title" style="margin-top:16px"><i class="ti ti-atom"></i> Understanding the Greeks</div>
+      <ul class="step-list">
+        <li><div class="step-content"><div class="step-title">Delta — how much the option moves per $1 stock move</div><div class="step-desc">An ATM call has ~0.50 delta. If the stock rises $1, your option gains $0.50 (x100 = $50/contract). ITM options have higher delta (0.70–0.90) and behave more like owning shares.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Theta — time decay (your enemy)</div><div class="step-desc">Theta is how much your option loses per day just from time passing. A $2.00 option with −$0.05 theta loses $5/day per contract. It accelerates in the last 2 weeks before expiry.</div><div class="step-tip">Theta is why you never hold options too close to expiry. Sell with at least 7–10 days left.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Vega — sensitivity to volatility changes</div><div class="step-desc">High vega means your option's value rises sharply if market volatility increases (like before earnings). This is why options get expensive right before earnings — IV (implied volatility) spikes.</div></div></li>
+        <li><div class="step-content"><div class="step-title">Straddle — a way to profit from big moves in either direction</div><div class="step-desc">Buy both a call AND a put at the same strike and expiry. Useful before earnings when you know a big move is coming but don't know which direction. Costs more but profits from volatility itself.</div></div></li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────
+const TICKER_COLORS={AAPL:['#e8f0fe','#1967d2'],MSFT:['#e3f2fd','#1565c0'],NVDA:['#e8f5e9','#2e7d32'],TSLA:['#fce4ec','#c62828'],AMZN:['#fff8e1','#e65100'],META:['#e8eaf6','#283593'],GOOGL:['#f3e5f5','#6a1b9a'],AMD:['#fbe9e7','#bf360c'],SPY:['#e0f2f1','#00695c'],QQQ:['#f1f8e9','#33691e'],INTC:['#f9fbe7','#558b2f'],DIS:['#e8eaf6','#1a237e'],NFLX:['#fee2e2','#991b1b'],COIN:['#ede9fe','#4c1d95'],PLTR:['#e0f2f1','#004d40'],SOFI:['#e8f0fe','#0d47a1'],F:['#fff8e1','#e65100'],UBER:['#1c1c1a','#e8e8e4'],SNAP:['#fef9c3','#713f12'],GME:['#dcfce7','#14532d'],AMC:['#fee2e2','#7f1d1d'],HOOD:['#ede9fe','#3b0764'],RIVN:['#e0f7fa','#006064'],LCID:['#e8f5e9','#1b5e20'],MARA:['#fef3c7','#78350f'],RIOT:['#fce7f3','#831843']};
+const PAST_OUTCOMES=[{date:'Jun 19',ticker:'NVDA',type:'CALL',horizon:'Short',entry:'$127.40',exit:'$171.20',ret:'+34.4%',outcome:'win'},{date:'Jun 19',ticker:'AAPL',type:'STOCK',horizon:'Long',entry:'$211.00',exit:'$218.30',ret:'+3.5%',outcome:'win'},{date:'Jun 18',ticker:'INTC',type:'PUT',horizon:'Short',entry:'$0.85',exit:'$0.40',ret:'−52.9%',outcome:'loss'},{date:'Jun 18',ticker:'META',type:'CALL',horizon:'Short',entry:'$580.00',exit:'$611.50',ret:'+5.4%',outcome:'win'},{date:'Jun 17',ticker:'TSLA',type:'STOCK',horizon:'Long',entry:'$248.70',exit:'$261.10',ret:'+5.0%',outcome:'win'},{date:'Jun 17',ticker:'AMD',type:'CALL',horizon:'Short',entry:'$1.20',exit:'$1.85',ret:'+54.2%',outcome:'win'},{date:'Jun 16',ticker:'SPY',type:'PUT',horizon:'Short',entry:'$2.10',exit:'$3.40',ret:'+61.9%',outcome:'win'},{date:'Jun 16',ticker:'MSFT',type:'STOCK',horizon:'Long',entry:'$448.20',exit:'$431.00',ret:'−3.8%',outcome:'loss'},{date:'Jun 15',ticker:'AMZN',type:'CALL',horizon:'Short',entry:'$0.95',exit:'—',ret:'—',outcome:'pending'},{date:'Jun 15',ticker:'GOOGL',type:'STOCK',horizon:'Long',entry:'$178.40',exit:'$186.70',ret:'+4.6%',outcome:'win'}];
+const BANNER_FALLBACK=[{ticker:'NVDA',price:'$875.40',chg:'+2.1%',up:true,reason:'AI chip demand'},{ticker:'AAPL',price:'$213.20',chg:'+0.8%',up:true,reason:'WWDC buzz'},{ticker:'META',price:'$501.30',chg:'+1.4%',up:true,reason:'AI ad growth'},{ticker:'TSLA',price:'$248.70',chg:'−1.2%',up:false,reason:'Delivery fears'},{ticker:'AMD',price:'$158.90',chg:'+3.2%',up:true,reason:'MI300X demand'}];
+const CAT_CLASSES={political:'cat-political',social:'cat-social',earnings:'cat-earnings',insider:'cat-insider',meme:'cat-meme',macro:'cat-macro'};
+const CAT_ICONS={political:'ti-building-government',social:'ti-brand-twitter',earnings:'ti-report-money',insider:'ti-user-dollar',meme:'ti-rocket',macro:'ti-world'};
+
+let allPicks=[],currentFilter='all',budget=2000,pulseLoaded=false,earningsLoaded=false,starterLoaded=false,optLoaded=false,bFilter='all';
+const today=new Date();
+
+// ── INIT ──────────────────────────────────────────────────────
+document.getElementById('dateDisplay').textContent=today.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+const hour=today.getHours(),isOpen=today.getDay()>=1&&today.getDay()<=5&&hour>=9&&hour<16;
+const ms=document.getElementById('marketStatus');
+ms.textContent=isOpen?'● Market Open':'● Market Closed';
+ms.className='market-pill '+(isOpen?'market-open':'market-closed');
+
+// ── BANNER ────────────────────────────────────────────────────
+function renderBanner(picks){
+  document.getElementById('tickerTrack').innerHTML=[...picks,...picks].map(p=>`<div class="ticker-item"><span class="ticker-sym">${p.ticker}</span><span class="${p.up?'ticker-up':'ticker-dn'}">${p.chg}</span><span class="ticker-reason">${p.reason}</span></div>`).join('');
+}
+renderBanner(BANNER_FALLBACK);
+async function loadBanner(k){
+  const ck='pt_banner_'+today.toISOString().slice(0,10);
+  const c=localStorage.getItem(ck);
+  if(c){try{renderBanner(JSON.parse(c));return;}catch(e){}}
+  try{
+    const r=await apiFetch(k,`Generate top 5 trending stocks today. JSON array only: [{"ticker":"NVDA","price":"$875","chg":"+2.1%","up":true,"reason":"AI demand"}]. 5 items, reason 2-4 words.`,300);
+    const items=safeParseJSON(r);
+    localStorage.setItem(ck,JSON.stringify(items));renderBanner(items);
+  }catch(e){}
+}
+
+// ── API HELPERS ───────────────────────────────────────────────
+function getApiKey(){return localStorage.getItem('pulsetrader_apikey')||'';}
+function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(!k){alert('Please enter an API key.');return;}localStorage.setItem('pulsetrader_apikey',k);document.getElementById('apiModal').classList.add('hidden');loadPicks(true);loadBanner(k);}
+function showApiModal(){document.getElementById('apiKeyInput').value=getApiKey();document.getElementById('apiModal').classList.remove('hidden');}
+async function apiFetch(apiKey,prompt,maxTokens=2000){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
+  if(!res.ok){const e=await res.json().catch(()=>({error:{message:'Unknown'}}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
+  const d=await res.json();
+  return d.content?.find(b=>b.type==='text')?.text||'';
+}
+
+// ── CONTROLS ──────────────────────────────────────────────────
+document.getElementById('budgetSlider').addEventListener('input',e=>{
+  budget=parseInt(e.target.value);
+  document.getElementById('budgetDisplay').textContent='$'+budget.toLocaleString();
+  const notice=document.getElementById('budgetNotice'),callout=document.getElementById('budgetCallout');
+  if(budget<=1000){notice.classList.add('show');callout.classList.remove('hidden');document.getElementById('budgetCalloutText').textContent=`Budget mode: showing picks under $${budget.toLocaleString()}. Look for ⭐ Budget Pick cards — cheap options contracts and fractional-share stocks.`;}
+  else{notice.classList.remove('show');callout.classList.add('hidden');}
+  renderPicks();
+});
+function setFilter(btn){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentFilter=btn.dataset.type;renderPicks();}
+function setBFilter(btn){document.querySelectorAll('[data-bf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');bFilter=btn.dataset.bf;renderStarterCards();}
+function switchTab(btn,tab){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  ['today','earnings','pulse','outcomes','guide','bstocks','options101'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
+  if(tab==='pulse'&&!pulseLoaded)loadPulse();
+  if(tab==='earnings'&&!earningsLoaded)loadEarnings();
+  if(tab==='bstocks'&&!starterLoaded)loadStarterStocks();
+  if(tab==='options101'&&!optLoaded)loadOptionsPicks();
+}
+function switchOptTab(btn,tier){document.querySelectorAll('.opt-tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.options-panel').forEach(p=>p.classList.remove('active'));document.getElementById('opt-'+tier).classList.add('active');}
+function toggleHow(el){const b=el.querySelector('.how-body'),ic=el.querySelector('.how-toggle');b.classList.toggle('open');if(ic)ic.style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0)';}
+
+// ── RENDER HELPERS ────────────────────────────────────────────
+function tickerStyle(t){const c=TICKER_COLORS[t]||['#f0efec','#555'];return `background:${c[0]};color:${c[1]}`;}
+function renderOutcomes(){document.getElementById('outcomesBody').innerHTML=PAST_OUTCOMES.map(o=>{const rc=o.ret.startsWith('+')?'up':o.ret==='—'?'':'down';return `<tr><td style="color:var(--text2)">${o.date}</td><td><strong>${o.ticker}</strong></td><td><span class="type-badge badge-${o.type.toLowerCase()}">${o.type}</span></td><td><span class="pill ${o.horizon==='Long'?'pill-win':'pill-pending'}">${o.horizon}</span></td><td>${o.entry}</td><td>${o.exit}</td><td class="${rc}" style="font-weight:700">${o.ret}</td><td><span class="pill pill-${o.outcome}">${o.outcome==='win'?'✓ Win':o.outcome==='loss'?'✗ Loss':'⏳ Open'}</span></td></tr>`;}).join('');}
+
+// ── RENDER PICKS ──────────────────────────────────────────────
+function renderPicks(){
+  const grid=document.getElementById('picksGrid');
+  const visible=allPicks.filter(p=>{
+    if(p.maxEntry>budget)return false;
+    if(currentFilter==='all')return true;
+    if(currentFilter==='long')return p.horizon==='long';
+    if(currentFilter==='short')return p.horizon==='short';
+    return p.type===currentFilter;
+  });
+  if(!visible.length){document.getElementById('summaryRow').style.display='none';grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-filter-off"></i><strong>No picks match your filters.</strong><br>Try raising your budget or selecting "All".</div>`;return;}
+  document.getElementById('summaryRow').style.display='grid';
+  document.getElementById('sumTotal').textContent=visible.length;
+  document.getElementById('sumConf').textContent=Math.round(visible.reduce((s,p)=>s+p.confidence,0)/visible.length)+'%';
+  document.getElementById('sumExp').textContent='$'+visible.reduce((s,p)=>s+p.maxEntry,0).toLocaleString();
+  document.getElementById('sumLong').textContent=visible.filter(p=>p.horizon==='long').length;
+  document.getElementById('sumShort').textContent=visible.filter(p=>p.horizon==='short').length;
+  document.getElementById('sumBudget').textContent=visible.filter(p=>p.maxEntry<=300).length;
+  grid.innerHTML=visible.map(p=>{
+    const bc=`badge-${p.type}`,bl=p.type==='call'?'Call':p.type==='put'?'Put':'Stock',ex=p.expiry?` · ${p.expiry}`:'';
+    const cc=p.confidence>=75?'#22c55e':p.confidence>=55?'#f59e0b':'#ef4444',ib=p.maxEntry<=300;
+    const rh=`https://robinhood.com/stocks/${p.ticker}`,wb=`https://www.webull.com/quote/${p.ticker.toLowerCase()}`;
+    const hH=p.horizon==='long'?`<div class="horizon-block long"><div class="horizon-header"><i class="ti ti-calendar-month" style="font-size:12px"></i> Long-term hold</div><div class="horizon-body">${p.horizonNote}</div></div>`:`<div class="horizon-block short"><div class="horizon-header"><i class="ti ti-clock-bolt" style="font-size:12px"></i> Short-term · Sell by: ${p.sellBy||'within 1–5 days'}</div><div class="horizon-body">${p.horizonNote}</div></div>`;
+    const hG=p.type==='stock'?`<ol><li>Search <strong>${p.ticker}</strong> on Robinhood or Webull.</li><li>Tap Buy → enter a dollar amount (fractional OK). Use Limit Order within <strong>${p.entryRange}</strong>.</li><li>Stop at <strong>${p.stopLoss}</strong>, target <strong>${p.target}</strong>.</li></ol>`:p.type==='call'?`<ol><li>Open <strong>${p.ticker}</strong> options chain.</li><li>Select Call, expiry <strong>${p.expiry}</strong>.</li><li>Pick a strike near current price. Each contract = 100 shares.</li><li>Buy 1 contract with your budget. Sell when target hit — don't hold to expiry.</li></ol>`:`<ol><li>Open <strong>${p.ticker}</strong> options chain.</li><li>Select Put, expiry <strong>${p.expiry}</strong>.</li><li>Strike at or slightly below current price.</li><li>Puts profit when stock falls. Sell before expiry to avoid full time-decay loss.</li></ol>`;
+    return `<div class="pick-card ${p.type}${ib?' budget-friendly':''}"><div class="card-head"><div class="ticker-block"><div class="ticker-logo" style="${tickerStyle(p.ticker)}">${p.ticker.slice(0,3)}</div><div><div class="ticker-sym">${p.ticker}</div><div class="ticker-co">${p.company}</div></div></div><div class="badges"><span class="type-badge ${bc}">${bl}${ex}</span>${ib?'<span class="badge-budget">⭐ Budget</span>':''}</div></div><div class="price-row"><span class="price-main">${p.price}</span><span class="price-chg ${p.direction==='up'?'up':'down'}">${p.change}</span></div><div class="meta-grid"><div class="meta-item"><div class="meta-lbl">Entry range</div><div class="meta-val">${p.entryRange}</div></div><div class="meta-item"><div class="meta-lbl">Target</div><div class="meta-val">${p.target}</div></div><div class="meta-item"><div class="meta-lbl">Stop loss</div><div class="meta-val">${p.stopLoss}</div></div><div class="meta-item"><div class="meta-lbl">Max invest</div><div class="meta-val">$${p.maxEntry.toLocaleString()}</div></div></div><div class="thesis">${p.thesis}</div>${hH}<div class="conf-bar"><div class="conf-head"><span class="conf-lbl">AI confidence</span><span class="conf-pct">${p.confidence}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${p.confidence}%;background:${cc}"></div></div></div><div class="how-block" onclick="toggleHow(this)"><div class="how-header"><span><i class="ti ti-help-circle" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>How to buy this ${bl.toLowerCase()}</span><i class="ti ti-chevron-down how-toggle" style="font-size:13px;transition:transform .2s"></i></div><div class="how-body">${hG}</div></div><div class="card-foot"><a href="${rh}" target="_blank" class="buy-btn btn-primary"><i class="ti ti-external-link"></i> Robinhood</a><a href="${wb}" target="_blank" class="buy-btn btn-secondary"><i class="ti ti-external-link"></i> Webull</a></div></div>`;
+  }).join('');
+}
+
+// ── JSON REPAIR ───────────────────────────────────────────────
+function safeParseJSON(text){
+  const clean=text.replace(/```json|```/g,'').trim();
+  try{return JSON.parse(clean);}catch(e){
+    // Attempt to repair truncated JSON array by finding last complete object
+    const lastBrace=clean.lastIndexOf('}');
+    if(lastBrace===-1)throw e;
+    let repaired=clean.slice(0,lastBrace+1);
+    // Close array if needed
+    if(!repaired.trimEnd().endsWith(']'))repaired+=']';
+    // Remove trailing comma before close
+    repaired=repaired.replace(/,\s*\]/g,']');
+    try{return JSON.parse(repaired);}catch(e2){throw new Error('Could not parse response. Try again.');}
+  }
+}
+
+// ── LOAD PICKS (2 batches of 25) ─────────────────────────────
+async function loadPicks(force=false){
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_picks_v4_'+today.toISOString().slice(0,10);
+  if(!force){const c=localStorage.getItem(ck);if(c){try{allPicks=JSON.parse(c);renderPicks();return;}catch(e){}}}
+  document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 1 of 2…</div>';
+  document.getElementById('summaryRow').style.display='none';
+  const dateStr=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  const schema=`{"ticker":"AAPL","company":"Apple Inc.","type":"stock","price":"$211.40","change":"+1.2%","direction":"up","entryRange":"$209-$213","target":"$225","stopLoss":"$204","maxEntry":500,"expiry":null,"confidence":78,"horizon":"long","horizonNote":"Hold 6-12 months.","sellBy":null,"thesis":"Breaking out above 200-day MA."}`;
+
+  const makePrompt=(batch,tickers)=>`Stock analyst for ${dateStr}. Generate exactly 25 trading picks (batch ${batch}/2).
+Include budget range: some maxEntry under $200, some $200-$1000, some $1000+. Mix stocks/calls/puts, long/short horizon.
+Tickers to use (pick 25 unique): ${tickers}
+Respond ONLY with a JSON array of 25 objects. No markdown. Schema: [${schema}]
+Rules: type="stock"|"call"|"put", horizon="long"|"short", expiry="Jul 18" for options or null for stocks, sellBy=date string for short picks or null, confidence=50-92, direction="up"|"down", thesis=1 sentence.`;
+
+  const tickers1='AAPL,MSFT,NVDA,TSLA,META,AMZN,GOOGL,AMD,SPY,QQQ,PLTR,SOFI,F,COIN,NFLX,DIS,UBER,SNAP,GME,AMC,HOOD,RIVN,MARA,RIOT,JPM';
+  const tickers2='INTC,BA,GS,WMT,COST,PFE,JNJ,XOM,CVX,NIO,SHOP,SQ,PYPL,BABA,LCID,SMCI,DELL,CRWD,NET,RBLX,DKNG,OPEN,CLOV,SNDL,BBBY';
+
+  try{
+    document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 1 of 2…</div>';
+    const t1=await apiFetch(k,makePrompt(1,tickers1),3500);
+    const b1=safeParseJSON(t1);
+
+    document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 2 of 2…</div>';
+    const t2=await apiFetch(k,makePrompt(2,tickers2),3500);
+    const b2=safeParseJSON(t2);
+
+    allPicks=[...b1,...b2];
+    localStorage.setItem(ck,JSON.stringify(allPicks));
+    renderPicks();loadBanner(k);
+  }catch(e){
+    document.getElementById('picksGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Could not load picks</strong><br><span style="font-size:13px;color:var(--text2)">${e.message}</span><br><br><button class="buy-btn btn-primary" style="max-width:180px;margin:0 auto 8px" onclick="loadPicks(true)"><i class="ti ti-refresh"></i> Try again</button><br><button class="buy-btn btn-secondary" style="max-width:180px;margin:0 auto" onclick="showApiModal()"><i class="ti ti-key"></i> Update API key</button></div>`;
+  }
+}
+
+// ── EARNINGS CALLS ────────────────────────────────────────────
+let starterStocks=[];
+async function loadEarnings(force=false){
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_earnings_'+today.toISOString().slice(0,10);
+  if(!force){const c=localStorage.getItem(ck);if(c){try{renderEarnings(JSON.parse(c));earningsLoaded=true;return;}catch(e){}}}
+  document.getElementById('earningsGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading earnings calendar…</div>';
+  const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const prompt=`Market analyst for week of ${dateStr}. Generate 8 earnings reports this week.
+Respond ONLY as a JSON array, no markdown:
+[{"ticker":"AAPL","company":"Apple","earningsDate":"Jun 24","earningsTime":"After Close","verdict":"hot","expectedEPS":"$1.42","previousEPS":"$1.26","revenueEst":"$89B","thesis":"Services growth accelerating. iPhone cycle strong. Beat likely.","strategy":"Buy 1 call option expiring week after earnings, strike near current price. Sell day before if up 50%+.","strategyType":"bullish","risk":"Premium decay if no move. Size to 1 contract only."}]
+Rules: verdict="hot"|"watch"|"avoid". strategyType="bullish"|"bearish"|"neutral". earningsTime="Before Open"|"After Close". Keep thesis, strategy, risk each under 2 sentences. Mix: 3 hot, 3 watch, 2 avoid. Use real companies reporting this week.`;
+  try{
+    const text=await apiFetch(k,prompt,1800);
+    const data=safeParseJSON(text);
+    localStorage.setItem(ck,JSON.stringify(data));
+    renderEarnings(data);earningsLoaded=true;
+  }catch(e){
+    document.getElementById('earningsGrid').innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Failed to load earnings.</strong><br><span style="font-size:12px;color:var(--text2)">${e.message}</span><br><button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadEarnings(true)"><i class="ti ti-refresh"></i> Retry</button></div>`;
+  }
+}
+function renderEarnings(data){
+  document.getElementById('earningsGrid').innerHTML=data.map(e=>{
+    const vc={'hot':'verdict-hot','watch':'verdict-watch','avoid':'verdict-avoid'}[e.verdict]||'verdict-avoid';
+    const lc={'hot':'hot','watch':'watch','avoid':'avoid'}[e.verdict]||'avoid';
+    const sc={'bullish':'earn-strategy','bearish':'earn-strategy bearish','neutral':'earn-strategy neutral'}[e.strategyType]||'earn-strategy neutral';
+    const sl={'bullish':'📈 Bullish strategy','bearish':'📉 Bearish strategy','neutral':'⚖️ Neutral strategy'}[e.strategyType]||'Strategy';
+    return `<div class="earn-card ${lc}"><div class="earn-head"><div><div class="earn-ticker">${e.ticker}</div><div class="earn-company">${e.company}</div></div><div style="text-align:right"><span class="earn-verdict ${vc}">${e.verdict==='hot'?'🔥 Hot':'⚡ '+e.verdict.charAt(0).toUpperCase()+e.verdict.slice(1)}</span><div class="earn-date-badge" style="margin-top:5px">${e.earningsDate} · ${e.earningsTime}</div></div></div><div class="earn-est"><div class="earn-est-item">EPS est: <strong>${e.expectedEPS}</strong></div><div class="earn-est-item">Prev: <strong>${e.previousEPS}</strong></div><div class="earn-est-item">Rev est: <strong>${e.revenueEst}</strong></div></div><div class="earn-thesis">${e.thesis}</div><div class="${sc}"><div class="earn-strategy-lbl">${sl}</div>${e.strategy}</div><div style="font-size:11px;color:var(--text3);padding:8px 0 2px"><i class="ti ti-alert-triangle" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>${e.risk}</div><div class="card-foot"><a href="https://robinhood.com/stocks/${e.ticker}" target="_blank" class="buy-btn btn-primary" style="font-size:12px"><i class="ti ti-external-link"></i> Trade</a><a href="https://finance.yahoo.com/quote/${e.ticker}" target="_blank" class="buy-btn btn-secondary" style="font-size:12px"><i class="ti ti-external-link"></i> Yahoo Finance</a></div></div>`;
+  }).join('');
+}
+
+// ── MARKET PULSE ──────────────────────────────────────────────
+async function loadPulse(force=false){
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_pulse_v1_'+today.toISOString().slice(0,10);
+  if(!force){const c=localStorage.getItem(ck);if(c){try{const d=JSON.parse(c);renderPulseCards(d.catalysts);renderHeatmap(d.heatmap);document.getElementById('pulseSummaryBox').innerHTML=`<p style="color:var(--text);font-size:13px;line-height:1.7">${d.summary}</p>`;pulseLoaded=true;return;}catch(e){}}}
+  document.getElementById('pulseGrid').innerHTML='<div class="loading-state" style="grid-column:1/-1"><i class="ti ti-loader-2"></i>Scanning news and social media…</div>';
+  const dateStr=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const prompt=`You are a market intelligence analyst for ${dateStr}. Surface real-world catalysts that move stocks — political statements, viral X/Twitter posts, meme momentum, earnings surprises, insider trades, macro events. Think Trump praising Dell, AMC short squeeze, Reddit WSB momentum.
+
+Respond ONLY with valid JSON, no markdown:
+{"summary":"2-3 sentence plain overview of today's biggest market-moving themes","heatmap":[{"ticker":"NVDA","company":"Nvidia","score":94}],"catalysts":[{"ticker":"DELL","company":"Dell Technologies","category":"political","headline":"Trump praises Dell on Truth Social","summary":"Former President Trump posted strong support for Dell on Truth Social, triggering immediate retail buying. These endorsements historically cause 5–15% spikes within hours.","source":"Truth Social","timeAgo":"2h ago","expectedMove":"+5–12%","sentiment":"bullish","action":"Political endorsements create short-term momentum. Consider a small position or short-dated call. Set a tight stop — these moves often reverse in 1–3 days."}]}
+
+Rules: exactly 6 catalysts, category one of: political,social,earnings,insider,meme,macro. Include at least 1 each of political,social,meme. Heatmap: 8 tickers, scores 40–99. action: 2–3 beginner-friendly sentences explaining what to do and the risk.`;
+  try{
+    const text=await apiFetch(k,prompt,2500);
+    const d=safeParseJSON(text);
+    localStorage.setItem(ck,JSON.stringify(d));
+    renderPulseCards(d.catalysts||[]);renderHeatmap(d.heatmap||[]);
+    document.getElementById('pulseSummaryBox').innerHTML=`<p style="color:var(--text);font-size:13px;line-height:1.7">${d.summary||''}</p>`;
+    pulseLoaded=true;
+  }catch(e){document.getElementById('pulseGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Failed to load pulse.</strong><br><button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadPulse(true)">Retry</button></div>`;}
+}
+function renderPulseCards(cats){
+  if(!cats||!cats.length){document.getElementById('pulseGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1">No catalysts found.</div>';return;}
+  document.getElementById('pulseGrid').innerHTML=cats.map(c=>{
+    const cc=CAT_CLASSES[c.category]||'cat-macro',ci=CAT_ICONS[c.category]||'ti-news';
+    const mc=(c.expectedMove||'').startsWith('+')||c.sentiment==='bullish'?'#22c55e':'#ef4444';
+    return `<div class="pulse-card"><div class="pulse-card-top"><div class="pulse-meta"><span class="catalyst-badge ${cc}"><i class="ti ${ci}" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>${c.category}</span><span class="pulse-time">${c.timeAgo}</span><span class="pulse-source">${c.source}</span></div><div class="pulse-ticker-row"><div class="ticker-logo" style="${tickerStyle(c.ticker)};width:35px;height:35px;border-radius:8px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.ticker.slice(0,3)}</div><div><div class="pulse-ticker">${c.ticker}</div><div class="pulse-company">${c.company}</div></div><div style="margin-left:auto;text-align:right"><div class="pulse-move" style="color:${mc}">${c.expectedMove}</div><div style="font-size:10px;color:var(--text3)">expected move</div></div></div><div class="pulse-headline">${c.headline}</div><div class="pulse-summary">${c.summary}</div><div class="pulse-action"><div class="pulse-action-lbl"><i class="ti ti-bulb" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>What to do</div>${c.action}</div></div><div class="pulse-card-foot"><a href="https://robinhood.com/stocks/${c.ticker}" target="_blank" class="pulse-btn btn-primary"><i class="ti ti-external-link"></i> Trade</a><a href="https://twitter.com/search?q=${encodeURIComponent('$'+c.ticker)}&f=live" target="_blank" class="pulse-btn btn-secondary"><i class="ti ti-brand-twitter"></i> X buzz</a><a href="https://www.google.com/search?q=${encodeURIComponent(c.ticker+' '+c.headline)}" target="_blank" class="pulse-btn btn-secondary"><i class="ti ti-news"></i> News</a></div></div>`;
+  }).join('');
+}
+function renderHeatmap(tickers){
+  if(!tickers||!tickers.length){document.getElementById('heatTable').innerHTML='';return;}
+  const max=Math.max(...tickers.map(t=>t.score));
+  document.getElementById('heatTable').innerHTML=`<div>${tickers.map((t,i)=>`<div class="heat-row"><span class="heat-rank">#${i+1}</span><span class="heat-ticker">${t.ticker}</span><span class="heat-co">${t.company}</span><div class="heat-bar-wrap"><div class="heat-bar" style="width:${Math.round(t.score/max*100)}%"></div></div><span class="heat-score">${t.score}</span></div>`).join('')}</div>`;
+}
+
+// ── STARTER STOCKS ────────────────────────────────────────────
+async function loadStarterStocks(force=false){
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_starter_'+today.toISOString().slice(0,10);
+  if(!force){const c=localStorage.getItem(ck);if(c){try{starterStocks=JSON.parse(c);renderStarterCards();starterLoaded=true;return;}catch(e){}}}
+  document.getElementById('blistGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Generating 25+ starter stocks across all price ranges…</div>';
+  const dateStr=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const prompt=`You are an investment educator for ${dateStr}. Generate a daily list of 28 stocks beginner investors should consider — from penny stocks to premium shares. Plain English, no jargon.
+
+Respond ONLY with a valid JSON array — no markdown:
+[{"ticker":"F","company":"Ford Motor Company","price":"$12.40","priceCategory":"low","horizon":"long","why":"Ford is aggressively pivoting to electric vehicles with its F-150 Lightning. At under $15 a share, it's easy to own many shares and benefit from any EV market recovery. The dividend also pays you to hold.","horizonNote":"Hold 12–24 months. Add more shares if it dips below $10. Consider selling if it runs above $20 without EV business improvement.","sellWhen":"Sell if EV sales miss targets for 2 consecutive quarters, or if you hit a 40% gain.","tags":["EV","Dividend","Value"],"risk":"medium"}]
+
+Rules:
+- priceCategory: "penny" ($2–$10), "low" ($10–$50), "mid" ($50–$500), "high" ($500–$5000), "premium" ($5000+)
+- Include at least 4 from each category: penny, low, mid, high. 1–2 premium (e.g. NVDA, AMZN, BRK.B).
+- horizon: "long" or "short"
+- Include 14 long-term and 14 short-term picks
+- why: 2–3 sentences in plain English — explain WHY a beginner should care, what the company does, and why NOW
+- horizonNote: specific guidance on when to add more, what to watch
+- sellWhen: 1–2 clear, specific sell signals (e.g. "Sell if it drops below $8" or "Sell when it reaches $25")
+- tags: 2–3 short descriptive tags like "AI", "EV", "Dividend", "Growth", "Value", "Meme", "Crypto", "Healthcare"
+- risk: "low","medium","high"
+- Use a diverse mix of tickers from: F,SOFI,SNAP,HOOD,RIVN,LCID,MARA,RIOT,AMC,GME,PLTR,COIN,UBER,NFLX,DIS,AAPL,MSFT,NVDA,TSLA,META,AMZN,GOOGL,AMD,SPY,QQQ,BA,JPM,WMT,PFE,XOM,SQ,PYPL,SHOP,NIO,BABA`;
+  try{
+    const text=await apiFetch(k,prompt,3500);
+    starterStocks=safeParseJSON(text);
+    localStorage.setItem(ck,JSON.stringify(starterStocks));
+    renderStarterCards();starterLoaded=true;
+  }catch(e){document.getElementById('blistGrid').innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i>Failed. <button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadStarterStocks(true)">Retry</button></div>`;}
+}
+function renderStarterCards(){
+  const filtered=starterStocks.filter(s=>{
+    if(bFilter==='all')return true;
+    if(bFilter==='long')return s.horizon==='long';
+    if(bFilter==='short')return s.horizon==='short';
+    return s.priceCategory===bFilter;
+  });
+  document.getElementById('blistCount').textContent=filtered.length;
+  const ptMap={'penny':'price-penny','low':'price-low','mid':'price-mid','high':'price-high','premium':'price-premium'};
+  const ptLabel={'penny':'$2–$10','low':'$10–$50','mid':'$50–$500','high':'$500–$5k','premium':'$5k+'};
+  const riskColor={'low':'var(--success-text)','medium':'var(--warning-text)','high':'var(--danger-text)'};
+  document.getElementById('blistGrid').innerHTML=filtered.map(s=>`
+<div class="blist-card ${s.horizon}-pick">
+  <div class="blist-head">
+    <div>
+      <div class="blist-ticker">${s.ticker} <span style="font-size:13px;font-weight:400;color:var(--text2)">${s.price}</span></div>
+      <div class="blist-company">${s.company}</div>
+    </div>
+    <span class="blist-price-tag ${ptMap[s.priceCategory]||'price-mid'}">${ptLabel[s.priceCategory]||''}</span>
+  </div>
+  <div class="blist-why">${s.why}</div>
+  <div class="blist-horizon ${s.horizon}">
+    <div class="blist-horizon-lbl">${s.horizon==='long'?'📅 Long-term hold':'⚡ Short-term play'}</div>
+    ${s.horizonNote}
+  </div>
+  <div style="font-size:11.5px;color:var(--text2);padding:7px 9px;background:var(--bg2);border-radius:7px;">
+    <strong style="color:var(--text)">When to sell:</strong> ${s.sellWhen}
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="blist-tags">${(s.tags||[]).map(t=>`<span class="blist-tag">${t}</span>`).join('')}</div>
+    <span style="font-size:11px;font-weight:700;color:${riskColor[s.risk]||'var(--text2)'}">Risk: ${s.risk}</span>
+  </div>
+  <div class="card-foot">
+    <a href="https://robinhood.com/stocks/${s.ticker}" target="_blank" class="buy-btn btn-primary" style="font-size:12px"><i class="ti ti-external-link"></i> Robinhood</a>
+    <a href="https://finance.yahoo.com/quote/${s.ticker}" target="_blank" class="buy-btn btn-secondary" style="font-size:12px"><i class="ti ti-external-link"></i> Research</a>
+  </div>
+</div>`).join('');
+}
+
+// ── OPTIONS 101 PICKS ─────────────────────────────────────────
+async function loadOptionsPicks(){
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_optpicks_'+today.toISOString().slice(0,10);
+  if(localStorage.getItem(ck)){try{renderOptPicks(JSON.parse(localStorage.getItem(ck)));optLoaded=true;return;}catch(e){}}
+  ['micro','starter','mid','advanced'].forEach(t=>{const el=document.getElementById(`opt-${t}-picks`);if(el)el.innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading…</div>';});
+  const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const prompt=`You are an options educator for ${dateStr}. Generate specific, realistic options picks for 4 budget tiers. Beginner-friendly language only.
+
+Respond ONLY with valid JSON — no markdown:
+{"micro":[{"ticker":"AMC","type":"call","strike":"$5","expiry":"Jul 18","premium":"$0.35","contractCost":"$35","why":"AMC frequently makes big moves on meme momentum. At $35/contract, you can participate in a squeeze with limited downside.","sellAt":"Sell if premium reaches $0.70 (+100%) or drops to $0.18 (−50%).","holdUntil":"Jul 11 at the latest — sell 7 days before expiry to avoid full time decay."}],"starter":[...],"mid":[...],"advanced":[...]}
+
+Rules:
+- micro: 3 picks, contractCost under $75 each
+- starter: 4 picks, contractCost $75–$300 each
+- mid: 4 picks, contractCost $300–$1000 each
+- advanced: 3 picks, contractCost $1000+ each (can include spreads)
+- Mix of calls and puts across tiers
+- why: 2 sentences plain English why this specific option makes sense right now
+- sellAt: specific price targets for both profit and loss exit
+- holdUntil: specific date or rule
+- Include tickers: AMC,GME,MARA,RIOT,PLTR,SOFI,TSLA,NVDA,AAPL,META,SPY,QQQ,AMD,COIN,SNAP`;
+  try{
+    const text=await apiFetch(k,prompt,2000);
+    const d=safeParseJSON(text);
+    localStorage.setItem(ck,JSON.stringify(d));
+    renderOptPicks(d);optLoaded=true;
+  }catch(e){['micro','starter','mid','advanced'].forEach(t=>{const el=document.getElementById(`opt-${t}-picks`);if(el)el.innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle"></i>Failed. <button class="buy-btn btn-primary" style="max-width:130px;margin:6px auto 0" onclick="loadOptionsPicks()">Retry</button></div>`;});}
+}
+function renderOptPicks(data){
+  const tierMap={'micro':'tier-micro','starter':'tier-starter','mid':'tier-mid','advanced':'tier-advanced'};
+  const tierLabel={'micro':'$20–$100','starter':'$100–$500','mid':'$500–$2k','advanced':'$2k+'};
+  ['micro','starter','mid','advanced'].forEach(tier=>{
+    const el=document.getElementById(`opt-${tier}-picks`);
+    if(!el||!data[tier])return;
+    el.innerHTML=data[tier].map(p=>`
+<div class="opt-budget-card">
+  <span class="opt-budget-tier ${tierMap[tier]}">${tierLabel[tier]}</span>
+  <div class="opt-pick-row">
+    <div class="opt-pick-head">
+      <span class="opt-pick-ticker">${p.ticker} ${p.type.toUpperCase()} ${p.strike} · ${p.expiry}</span>
+      <span class="opt-pick-cost">${p.contractCost}/contract</span>
+    </div>
+    <div class="opt-pick-detail">${p.why}</div>
+    <div class="opt-sell-rule"><strong>Sell when:</strong> ${p.sellAt}</div>
+    <div class="opt-sell-rule"><strong>Max hold until:</strong> ${p.holdUntil}</div>
+  </div>
+  <div class="card-foot" style="margin-top:8px">
+    <a href="https://robinhood.com/stocks/${p.ticker}" target="_blank" class="buy-btn btn-primary" style="font-size:11px"><i class="ti ti-external-link"></i> Trade on Robinhood</a>
+    <a href="https://www.webull.com/quote/${p.ticker.toLowerCase()}" target="_blank" class="buy-btn btn-secondary" style="font-size:11px"><i class="ti ti-external-link"></i> Webull</a>
+  </div>
+</div>`).join('');
+  });
+}
+
+// ── BOOT ──────────────────────────────────────────────────────
+renderOutcomes();
+const storedKey=getApiKey();
+if(storedKey){loadPicks();loadBanner(storedKey);}
+else{showApiModal();}
+</script>
+</body>
+</html>
