@@ -36,5 +36,5 @@ Deployed via GitHub Pages. No server required — the entire app is one HTML fil
 
 ## Disclaimer
 
-Not financial advice. AI-generated picks are for educational and informational purposes only. Always conduct your own research before investing. Past performance does not guarantee future results.
-This site is designed as a GUIDE.
+***Not financial advice. AI-generated picks are for educational and informational purposes only. Always conduct your own research before investing. Past performance does not guarantee future results.
+This site is designed as a GUIDE.***
