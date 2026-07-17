@@ -4,662 +4,415 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PulseTrader — Daily AI Stock & Options Picks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#ffffff;
-  --bg2:#f8f9fb;
-  --bg3:#f0f2f5;
-  --text:#0f172a;
-  --text2:#64748b;
-  --text3:#94a3b8;
-  --border:rgba(15,23,42,.08);
-  --border2:rgba(15,23,42,.15);
-  --success-bg:#f0fdf4;--success-text:#166534;
-  --danger-bg:#fef2f2;--danger-text:#991b1b;
-  --warning-bg:#fffbeb;--warning-text:#92400e;
-  --info-bg:#eff6ff;--info-text:#1d4ed8;
-  --purple-bg:#f5f3ff;--purple-text:#5b21b6;
-  --radius:10px;--radius-lg:16px;
-  --accent:#1e293b;--accent-text:#ffffff;
-  --accent-green:#16a34a;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow:0 4px 12px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.04);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.05);
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efec;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b96;
+  --border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.18);
+  --success-bg:#eaf3de;--success-text:#3b6d11;
+  --danger-bg:#fcebeb;--danger-text:#a32d2d;
+  --warning-bg:#faeeda;--warning-text:#854f0b;
+  --info-bg:#e6f1fb;--info-text:#185fa5;
+  --purple-bg:#ede9fe;--purple-text:#4c1d95;
+  --radius:8px;--radius-lg:12px;
+  --accent:#1a1a2e;--accent-text:#080808;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#0f172a;
-  --bg2:#1e293b;
-  --bg3:#162032;
-  --text:#f1f5f9;
-  --text2:#94a3b8;
-  --text3:#475569;
-  --border:rgba(255,255,255,.07);
-  --border2:rgba(255,255,255,.13);
-  --success-bg:#052e16;--success-text:#86efac;
-  --danger-bg:#450a0a;--danger-text:#fca5a5;
-  --warning-bg:#451a03;--warning-text:#fcd34d;
-  --info-bg:#0c1a4a;--info-text:#93c5fd;
+  --bg:#1c1c1a;--bg2:#252522;--bg3:#2e2e2b;
+  --text:#e8e8e4;--text2:#9b9b96;--text3:#6b6b67;
+  --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.18);
+  --success-bg:#173404;--success-text:#c0dd97;
+  --danger-bg:#501313;--danger-text:#f09595;
+  --warning-bg:#412402;--warning-text:#fac775;
+  --info-bg:#042c53;--info-text:#b5d4f4;
   --purple-bg:#2e1065;--purple-text:#c4b5fd;
-  --accent:#f1f5f9;--accent-text:#0f172a;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.3);
-  --shadow:0 4px 12px rgba(0,0,0,.3);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.4);
+  --accent:#e8e8e4;--accent-text:#1c1c1a;
 }}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh;}
 
-body{
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  background:var(--bg3);color:var(--text);
-  font-size:14px;line-height:1.6;min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ── TICKER BANNER ── */
-.ticker-banner{
-  background:linear-gradient(90deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);
-  color:#fff;overflow:hidden;height:36px;display:flex;align-items:center;
-}
-@media(prefers-color-scheme:dark){
-  .ticker-banner{background:linear-gradient(90deg,#020617 0%,#0c1a3a 50%,#020617 100%);}
-}
-.ticker-banner::before{
-  content:'🔥 LIVE';font-size:10px;font-weight:700;letter-spacing:.1em;
-  padding:0 16px;white-space:nowrap;opacity:.6;flex-shrink:0;
-  border-right:1px solid rgba(255,255,255,.1);
-}
+/* TICKER BANNER */
+.ticker-banner{background:var(--accent);color:var(--accent-text);overflow:hidden;height:34px;display:flex;align-items:center;}
+.ticker-banner::before{content:'🔥 TRENDING';font-size:10px;font-weight:700;letter-spacing:.08em;padding:0 14px;white-space:nowrap;opacity:.7;flex-shrink:0;}
 .ticker-track{display:flex;animation:scroll 44s linear infinite;white-space:nowrap;}
 .ticker-banner:hover .ticker-track{animation-play-state:paused;}
 @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.ticker-item{
-  display:inline-flex;align-items:center;gap:8px;padding:0 20px;font-size:12px;
-  border-right:1px solid rgba(255,255,255,.08);
-}
-.ticker-sym{font-weight:700;font-size:12.5px;letter-spacing:.01em;}
-.ticker-up{color:#4ade80;font-weight:600;}.ticker-dn{color:#f87171;font-weight:600;}
-.ticker-reason{opacity:.5;font-size:11px;}
+.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 18px;font-size:12px;border-right:.5px solid rgba(255,255,255,.15);}
+.ticker-sym{font-weight:700;font-size:13px;}
+.ticker-up{color:#4ade80;}.ticker-dn{color:#f87171;}
+.ticker-reason{opacity:.6;font-size:11px;}
 
-/* ── HEADER ── */
-.header{
-  background:rgba(255,255,255,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);padding:14px 24px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-  position:sticky;top:36px;z-index:10;
-}
-@media(prefers-color-scheme:dark){
-  .header{background:rgba(15,23,42,.9);}
-}
-.logo{display:flex;align-items:center;gap:12px;}
-.logo-icon{
-  width:36px;height:36px;
-  background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 100%);
-  border-radius:10px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 8px rgba(30,58,95,.3);
-}
-.logo-icon i{color:#4ade80;font-size:18px;}
-.logo-text{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.logo-sub{font-size:11px;color:var(--text3);font-weight:500;}
+/* HEADER */
+.header{background:var(--bg);border-bottom:.5px solid var(--border);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:34px;z-index:10;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-icon i{color:#4ade80;font-size:17px;}
+.logo-text{font-size:16px;font-weight:700;color:var(--text);}
+.logo-sub{font-size:11px;color:var(--text2);}
 .hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.date-badge{
-  font-size:12px;color:var(--text2);background:var(--bg2);
-  padding:5px 12px;border-radius:20px;border:1px solid var(--border);
-  font-weight:500;
-}
-.market-pill{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;letter-spacing:.02em;}
+.date-badge{font-size:12px;color:var(--text2);background:var(--bg2);padding:4px 10px;border-radius:20px;border:.5px solid var(--border);}
+.market-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
 .market-open{background:var(--success-bg);color:var(--success-text);}
 .market-closed{background:var(--danger-bg);color:var(--danger-text);}
-.icon-btn{
-  background:var(--bg);border:1px solid var(--border);color:var(--text2);
-  border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;gap:6px;
-  transition:all .15s ease;box-shadow:var(--shadow-sm);
-}
-.icon-btn:hover{background:var(--bg2);border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--shadow);}
+.icon-btn{background:var(--bg2);border:.5px solid var(--border);color:var(--text2);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .12s;}
+.icon-btn:hover{background:var(--bg3);}
 
-/* ── CONTROLS ── */
-.controls{
-  background:var(--bg);border-bottom:1px solid var(--border);
-  padding:12px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-}
-.ctrl-label{font-size:12px;color:var(--text2);white-space:nowrap;font-weight:600;}
-.budget-display{font-size:15px;font-weight:800;color:var(--text);min-width:72px;letter-spacing:-.02em;}
-input[type=range]{
-  width:140px;accent-color:#1e3a5f;height:4px;
-  appearance:none;-webkit-appearance:none;background:var(--bg3);border-radius:2px;outline:none;
-}
-input[type=range]::-webkit-slider-thumb{
-  appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:#1e293b;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2);
-}
-@media(prefers-color-scheme:dark){
-  input[type=range]::-webkit-slider-thumb{background:#f1f5f9;}
-}
-.filter-btns{display:flex;gap:6px;flex-wrap:wrap;}
-.fbtn{
-  font-size:12px;padding:5px 14px;border-radius:20px;
-  border:1px solid var(--border2);background:transparent;color:var(--text2);
-  cursor:pointer;font-weight:500;transition:all .15s ease;
-}
-.fbtn:hover{background:var(--bg2);border-color:var(--border2);}
-.fbtn.active{
-  background:var(--accent);color:var(--accent-text);border-color:var(--accent);
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
-}
-.budget-notice{
-  font-size:11px;color:var(--info-text);background:var(--info-bg);
-  padding:4px 12px;border-radius:20px;display:none;font-weight:600;
-  border:1px solid rgba(29,78,216,.15);
-}
+/* CONTROLS */
+.controls{background:var(--bg);border-bottom:.5px solid var(--border);padding:10px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.ctrl-label{font-size:12px;color:var(--text2);white-space:nowrap;}
+.budget-display{font-size:14px;font-weight:700;color:var(--text);min-width:68px;}
+input[type=range]{width:140px;accent-color:var(--accent);}
+.filter-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.fbtn{font-size:12px;padding:4px 12px;border-radius:20px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;}
+.fbtn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+.budget-notice{font-size:11px;color:var(--info-text);background:var(--info-bg);padding:3px 10px;border-radius:20px;display:none;}
 .budget-notice.show{display:inline-block;}
 
-/* ── LAYOUT ── */
-.main{max-width:1300px;margin:0 auto;padding:22px 24px;}
-
-.tabs{
-  display:flex;border-bottom:1px solid var(--border);
-  margin-bottom:22px;gap:0;overflow-x:auto;
-  scrollbar-width:none;
-}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{
-  padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;
-  color:var(--text3);border:none;background:none;
-  border-bottom:2px solid transparent;transition:all .15s ease;
-  white-space:nowrap;
-}
-.tab:hover{color:var(--text2);}
+/* LAYOUT */
+.main{max-width:1280px;margin:0 auto;padding:18px 22px;}
+.tabs{display:flex;border-bottom:.5px solid var(--border);margin-bottom:18px;gap:0;overflow-x:auto;}
+.tab{padding:8px 15px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2px solid transparent;transition:all .12s;white-space:nowrap;}
 .tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:700;}
 .hidden{display:none!important;}
+.disclaimer{font-size:11.5px;background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;line-height:1.5;}
+.section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.up{color:#22c55e;}.down{color:#ef4444;}
 
-.disclaimer{
-  font-size:12px;background:var(--warning-bg);color:var(--warning-text);
-  border-radius:var(--radius);padding:10px 14px;margin-bottom:18px;
-  line-height:1.6;border:1px solid rgba(146,64,14,.12);
-  display:flex;align-items:flex-start;gap:8px;
-}
-.section-title{
-  font-size:11px;font-weight:700;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.08em;
-  margin-bottom:14px;display:flex;align-items:center;gap:8px;
-}
-.up{color:#16a34a;font-weight:600;}.down{color:#dc2626;font-weight:600;}
+/* CARDS */
+.sum-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:16px;}
+.sum-card{background:var(--bg);border-radius:var(--radius);padding:12px 14px;border:.5px solid var(--border);}
+.sum-label{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.sum-val{font-size:20px;font-weight:700;color:var(--text);}
+.sum-sub{font-size:11px;color:var(--text2);margin-top:1px;}
 
-/* ── SUMMARY CARDS ── */
-.sum-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
-.sum-card{
-  background:var(--bg);border-radius:var(--radius-lg);padding:16px 18px;
-  border:1px solid var(--border);box-shadow:var(--shadow-sm);
-  transition:transform .15s ease,box-shadow .15s ease;
-}
-.sum-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
-.sum-label{font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
-.sum-val{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1;}
-.sum-sub{font-size:11px;color:var(--text3);margin-top:4px;font-weight:500;}
-
-/* ── PICKS GRID ── */
-.picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
-.pick-card{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:18px;display:flex;flex-direction:column;gap:12px;
-  transition:all .2s ease;box-shadow:var(--shadow-sm);
-}
-.pick-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px);}
-.pick-card.call{border-top:3px solid #16a34a;}
-.pick-card.put{border-top:3px solid #dc2626;}
-.pick-card.stock{border-top:3px solid #2563eb;}
-.pick-card.budget-friendly{
-  outline:2px solid #d97706;outline-offset:-1px;
-  background:linear-gradient(160deg,var(--bg) 0%,rgba(251,191,36,.04) 100%);
-}
-.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-.ticker-block{display:flex;align-items:center;gap:10px;}
-.ticker-logo{
-  width:40px;height:40px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;flex-shrink:0;
-  box-shadow:0 2px 6px rgba(0,0,0,.1);
-}
-.ticker-sym{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.ticker-co{font-size:11px;color:var(--text3);font-weight:500;margin-top:1px;}
-.badges{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
-.type-badge{
-  font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
-  text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;
-}
-.badge-call{background:#dcfce7;color:#15803d;}
-.badge-put{background:#fee2e2;color:#b91c1c;}
-.badge-stock{background:#dbeafe;color:#1d4ed8;}
-.badge-budget{
-  background:linear-gradient(135deg,#fef3c7,#fde68a);
-  color:#92400e;font-size:10px;font-weight:700;
-  padding:3px 8px;border-radius:6px;
-}
+/* PICKS GRID */
+.picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px;}
+.pick-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s;}
+.pick-card:hover{border-color:var(--border2);}
+.pick-card.call{border-top:3px solid #22c55e;}
+.pick-card.put{border-top:3px solid #ef4444;}
+.pick-card.stock{border-top:3px solid #3b82f6;}
+.pick-card.budget-friendly{outline:2px solid #f59e0b;outline-offset:-1px;}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ticker-block{display:flex;align-items:center;gap:9px;}
+.ticker-logo{width:37px;height:37px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.ticker-sym{font-size:17px;font-weight:700;color:var(--text);}
+.ticker-co{font-size:11px;color:var(--text2);}
+.badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.badge-call{background:#dcfce7;color:#166534;}
+.badge-put{background:#fee2e2;color:#991b1b;}
+.badge-stock{background:#dbeafe;color:#1e40af;}
+.badge-budget{background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;}
 @media(prefers-color-scheme:dark){
-  .badge-call{background:#14532d;color:#86efac;}
-  .badge-put{background:#450a0a;color:#fca5a5;}
-  .badge-stock{background:#1e3a8a;color:#93c5fd;}
-  .badge-budget{background:#451a03;color:#fcd34d;}
+  .badge-call{background:#173404;color:#c0dd97;}
+  .badge-put{background:#501313;color:#f09595;}
+  .badge-stock{background:#042c53;color:#b5d4f4;}
+  .badge-budget{background:#412402;color:#fac775;}
 }
-.price-row{display:flex;align-items:baseline;gap:10px;}
-.price-main{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.03em;}
-.price-chg{font-size:13px;font-weight:700;}
-.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.meta-item{background:var(--bg2);border-radius:8px;padding:8px 10px;border:1px solid var(--border);}
-.meta-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
-.meta-val{font-size:13px;font-weight:700;color:var(--text);}
-.thesis{
-  font-size:12.5px;color:var(--text2);line-height:1.6;
-  border-left:3px solid var(--border2);padding-left:10px;
-  font-style:italic;
-}
-.horizon-block{border-radius:10px;padding:10px 13px;border:1px solid transparent;}
-.horizon-block.long{
-  background:var(--success-bg);color:var(--success-text);
-  border-color:rgba(22,163,74,.15);
-}
-.horizon-block.short{
-  background:var(--warning-bg);color:var(--warning-text);
-  border-color:rgba(146,64,14,.12);
-}
-.horizon-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
-.horizon-body{font-size:12px;line-height:1.55;}
-.how-block{
-  background:var(--purple-bg);color:var(--purple-text);
-  border-radius:10px;padding:10px 13px;cursor:pointer;user-select:none;
-  border:1px solid rgba(91,33,182,.1);
-  transition:background .15s ease;
-}
-.how-block:hover{background:#ede9fe;}
-@media(prefers-color-scheme:dark){.how-block:hover{background:#3b1682;}}
-.how-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
-.how-body{font-size:12px;line-height:1.65;margin-top:8px;display:none;}
+.price-row{display:flex;align-items:baseline;gap:8px;}
+.price-main{font-size:21px;font-weight:700;color:var(--text);}
+.price-chg{font-size:13px;font-weight:600;}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.meta-item{background:var(--bg2);border-radius:7px;padding:7px 9px;}
+.meta-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.meta-val{font-size:12px;font-weight:700;color:var(--text);}
+.thesis{font-size:12px;color:var(--text2);line-height:1.55;border-left:2px solid var(--border2);padding-left:9px;}
+.horizon-block{border-radius:8px;padding:9px 11px;}
+.horizon-block.long{background:var(--success-bg);color:var(--success-text);}
+.horizon-block.short{background:var(--warning-bg);color:var(--warning-text);}
+.horizon-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+.horizon-body{font-size:11.5px;line-height:1.5;}
+.how-block{background:var(--purple-bg);color:var(--purple-text);border-radius:8px;padding:9px 11px;cursor:pointer;user-select:none;}
+.how-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between;}
+.how-body{font-size:11.5px;line-height:1.6;margin-top:6px;display:none;}
 .how-body.open{display:block;}
-.how-body ol{padding-left:18px;}
-.how-body li{margin-bottom:4px;}
-.conf-head{display:flex;justify-content:space-between;margin-bottom:5px;font-size:11px;}
-.conf-lbl{color:var(--text3);font-weight:600;}.conf-pct{font-weight:700;color:var(--text2);}
-.bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:3px;transition:width .4s ease;}
-.card-foot{display:flex;gap:8px;margin-top:auto;}
-.buy-btn{
-  flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;
-  cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;
-  gap:6px;text-decoration:none;transition:all .15s ease;letter-spacing:.01em;
-}
-.buy-btn:hover{transform:translateY(-1px);opacity:.9;box-shadow:var(--shadow);}
-.btn-primary{
-  background:linear-gradient(135deg,var(--accent) 0%,#334155 100%);
-  color:var(--accent-text);
-}
-@media(prefers-color-scheme:dark){
-  .btn-primary{background:linear-gradient(135deg,#f1f5f9 0%,#cbd5e1 100%);color:#0f172a;}
-}
-.btn-secondary{
-  background:var(--bg2);color:var(--text);
-  border:1px solid var(--border2);
-}
-.btn-secondary:hover{background:var(--bg3);}
+.how-body ol{padding-left:16px;}
+.how-body li{margin-bottom:3px;}
+.conf-head{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px;}
+.conf-lbl{color:var(--text3);}.conf-pct{font-weight:700;color:var(--text2);}
+.bar-track{height:4px;background:var(--bg3);border-radius:2px;}
+.bar-fill{height:100%;border-radius:2px;}
+.card-foot{display:flex;gap:7px;margin-top:auto;}
+.buy-btn{flex:1;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;transition:opacity .12s;}
+.buy-btn:hover{opacity:.82;}
+.btn-primary{background:var(--accent);color:var(--accent-text);}
+.btn-secondary{background:var(--bg2);color:var(--text);border:.5px solid var(--border2);}
 
-/* ── TABLE ── */
-.table-wrap{
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);
-}
+/* TABLE */
+.table-wrap{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
 table{width:100%;border-collapse:collapse;}
-thead{background:var(--bg2);}
-thead th{
-  font-size:10px;font-weight:700;color:var(--text3);text-align:left;
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;
-}
-tbody td{
-  font-size:13px;padding:11px 14px;
-  border-bottom:1px solid var(--border);color:var(--text);
-}
+thead th{font-size:10px;font-weight:700;color:var(--text3);text-align:left;padding:9px 13px;border-bottom:.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+tbody td{font-size:13px;padding:10px 13px;border-bottom:.5px solid var(--border);color:var(--text);}
 tbody tr:last-child td{border-bottom:none;}
-tbody tr{transition:background .1s ease;}
 tbody tr:hover{background:var(--bg2);}
-.pill{
-  font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
-  display:inline-block;letter-spacing:.02em;
-}
+.pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;}
 .pill-win{background:var(--success-bg);color:var(--success-text);}
 .pill-loss{background:var(--danger-bg);color:var(--danger-text);}
 .pill-pending{background:var(--warning-bg);color:var(--warning-text);}
 
-/* ── LOADING / EMPTY ── */
-.loading-state{
-  text-align:center;padding:56px 20px;color:var(--text3);
-}
-.loading-state i{
-  font-size:32px;display:block;margin:0 auto 12px;
-  animation:spin 1s linear infinite;color:var(--text3);
-}
-.empty-state{text-align:center;padding:44px;color:var(--text3);}
-.empty-state i{font-size:28px;display:block;margin:0 auto 10px;}
+/* STATES */
+.loading-state{text-align:center;padding:48px 20px;color:var(--text2);}
+.loading-state i{font-size:28px;display:block;margin:0 auto 10px;animation:spin 1.1s linear infinite;}
+.empty-state{text-align:center;padding:36px;color:var(--text2);}
+.empty-state i{font-size:26px;display:block;margin:0 auto 8px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── MARKET PULSE ── */
-.pulse-live{
-  display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
-  color:var(--danger-text);background:var(--danger-bg);
-  padding:5px 12px;border-radius:20px;border:1px solid rgba(185,28,28,.15);
-}
+/* MARKET PULSE */
+.pulse-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--danger-text);background:var(--danger-bg);padding:4px 10px;border-radius:20px;}
 .pulse-live-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1.2s ease-in-out infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-.pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px;}
-.pulse-card{
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;
-  box-shadow:var(--shadow-sm);transition:all .2s ease;
-}
-.pulse-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.pulse-card-top{padding:16px 16px 12px;}
-.pulse-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-.catalyst-badge{
-  font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
-  text-transform:uppercase;letter-spacing:.05em;
-}
-.cat-political{background:#fee2e2;color:#b91c1c;}
-.cat-social{background:#f5f3ff;color:#6d28d9;}
-.cat-earnings{background:#eff6ff;color:#1d4ed8;}
-.cat-insider{background:#fffbeb;color:#b45309;}
-.cat-meme{background:#fdf4ff;color:#a21caf;}
-.cat-macro{background:#f0fdfa;color:#0f766e;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px;margin-bottom:22px;}
+.pulse-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;}
+.pulse-card-top{padding:13px 15px 10px;}
+.pulse-meta{display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap;}
+.catalyst-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
+.cat-political{background:#fee2e2;color:#991b1b;}
+.cat-social{background:#ede9fe;color:#4c1d95;}
+.cat-earnings{background:#dbeafe;color:#1e40af;}
+.cat-insider{background:#fef3c7;color:#92400e;}
+.cat-meme{background:#fce7f3;color:#9d174d;}
+.cat-macro{background:#e0f2f1;color:#00695c;}
 @media(prefers-color-scheme:dark){
-  .cat-political{background:#450a0a;color:#fca5a5;}
+  .cat-political{background:#501313;color:#f09595;}
   .cat-social{background:#2e1065;color:#c4b5fd;}
-  .cat-earnings{background:#1e3a8a;color:#93c5fd;}
-  .cat-insider{background:#451a03;color:#fcd34d;}
-  .cat-meme{background:#500724;color:#f0abfc;}
+  .cat-earnings{background:#042c53;color:#b5d4f4;}
+  .cat-insider{background:#412402;color:#fac775;}
+  .cat-meme{background:#500724;color:#f9a8d4;}
   .cat-macro{background:#042f2e;color:#5eead4;}
 }
-.pulse-time{font-size:11px;color:var(--text3);font-weight:500;}
-.pulse-source{
-  font-size:10px;color:var(--text3);background:var(--bg2);
-  padding:2px 8px;border-radius:10px;border:1px solid var(--border);font-weight:600;
-}
-.pulse-ticker-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.pulse-ticker{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.pulse-company{font-size:11px;color:var(--text3);font-weight:500;}
-.pulse-move{font-size:15px;font-weight:800;}
-.pulse-headline{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.45;margin-bottom:8px;}
-.pulse-summary{font-size:12.5px;color:var(--text2);line-height:1.65;margin-bottom:10px;}
-.pulse-action{
-  background:var(--info-bg);color:var(--info-text);border-radius:10px;
-  padding:10px 13px;font-size:12px;line-height:1.6;
-  border:1px solid rgba(29,78,216,.1);
-}
-.pulse-action-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;opacity:.7;}
-.pulse-card-foot{
-  padding:10px 15px;border-top:1px solid var(--border);
-  display:flex;gap:8px;background:var(--bg2);
-}
-.pulse-btn{
-  flex:1;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;
-  cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;
-  gap:5px;text-decoration:none;transition:all .15s ease;
-}
-.pulse-btn:hover{opacity:.85;transform:translateY(-1px);}
-.heat-row{
-  display:flex;align-items:center;gap:12px;padding:10px 14px;
-  border-bottom:1px solid var(--border);transition:background .1s;
-}
-.heat-row:hover{background:var(--bg2);}
+.pulse-time{font-size:11px;color:var(--text3);}
+.pulse-source{font-size:10px;color:var(--text3);background:var(--bg2);padding:2px 7px;border-radius:10px;border:.5px solid var(--border);}
+.pulse-ticker-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pulse-ticker{font-size:19px;font-weight:700;color:var(--text);}
+.pulse-company{font-size:11px;color:var(--text2);}
+.pulse-move{font-size:14px;font-weight:700;}
+.pulse-headline{font-size:13px;font-weight:600;color:var(--text);line-height:1.45;margin-bottom:7px;}
+.pulse-summary{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:9px;}
+.pulse-action{background:var(--info-bg);color:var(--info-text);border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.55;}
+.pulse-action-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;opacity:.8;}
+.pulse-card-foot{padding:9px 14px;border-top:.5px solid var(--border);display:flex;gap:7px;}
+.pulse-btn{flex:1;padding:7px 9px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;transition:opacity .12s;}
+.pulse-btn:hover{opacity:.82;}
+.heat-row{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:.5px solid var(--border);}
 .heat-row:last-child{border-bottom:none;}
-.heat-rank{font-size:12px;font-weight:700;color:var(--text3);min-width:20px;}
-.heat-ticker{font-size:14px;font-weight:800;color:var(--text);min-width:52px;letter-spacing:-.01em;}
-.heat-co{font-size:11px;color:var(--text2);flex:1;font-weight:500;}
-.heat-bar-wrap{width:80px;height:6px;background:var(--bg3);border-radius:3px;flex-shrink:0;}
-.heat-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);}
-.heat-score{font-size:12px;font-weight:800;color:var(--text2);min-width:30px;text-align:right;}
+.heat-rank{font-size:12px;font-weight:700;color:var(--text3);min-width:18px;}
+.heat-ticker{font-size:14px;font-weight:700;color:var(--text);min-width:50px;}
+.heat-co{font-size:11px;color:var(--text2);flex:1;}
+.heat-bar-wrap{width:80px;height:5px;background:var(--bg3);border-radius:3px;flex-shrink:0;}
+.heat-bar{height:100%;border-radius:3px;background:#8b5cf6;}
+.heat-score{font-size:12px;font-weight:700;color:var(--text2);min-width:28px;text-align:right;}
 
-/* ── EARNINGS ── */
-.earnings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin-bottom:24px;}
-.earn-card{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:18px;display:flex;flex-direction:column;gap:12px;
-  box-shadow:var(--shadow-sm);transition:all .2s ease;
-}
-.earn-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.earn-card.hot{border-left:4px solid #d97706;}
-.earn-card.watch{border-left:4px solid #2563eb;}
-.earn-card.avoid{border-left:4px solid #9ca3af;}
-.earn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.earn-ticker{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.earn-date-badge{
-  font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;
-  background:var(--bg2);color:var(--text2);border:1px solid var(--border);
-}
-.earn-verdict{
-  font-size:10px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;padding:4px 10px;border-radius:20px;
-}
+/* WEEKLY EARNINGS CALLS */
+.earnings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:13px;margin-bottom:22px;}
+.earn-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;display:flex;flex-direction:column;gap:10px;}
+.earn-card.hot{border-left:3px solid #f59e0b;}
+.earn-card.watch{border-left:3px solid #3b82f6;}
+.earn-card.avoid{border-left:3px solid #6b7280;}
+.earn-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.earn-ticker{font-size:18px;font-weight:700;color:var(--text);}
+.earn-date-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border);}
+.earn-verdict{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:20px;}
 .verdict-hot{background:#fef3c7;color:#92400e;}
 .verdict-watch{background:var(--info-bg);color:var(--info-text);}
 .verdict-avoid{background:var(--bg2);color:var(--text3);}
 @media(prefers-color-scheme:dark){
-  .verdict-hot{background:#451a03;color:#fcd34d;}
+  .verdict-hot{background:#412402;color:#fac775;}
 }
-.earn-company{font-size:12px;color:var(--text3);font-weight:500;}
-.earn-est{display:flex;gap:12px;flex-wrap:wrap;}
-.earn-est-item{font-size:11.5px;color:var(--text2);}
-.earn-est-item strong{color:var(--text);font-weight:700;}
-.earn-thesis{font-size:12.5px;color:var(--text2);line-height:1.6;}
-.earn-strategy{
-  background:var(--success-bg);color:var(--success-text);
-  border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55;
-  border:1px solid rgba(22,163,74,.15);
-}
-.earn-strategy.bearish{background:var(--danger-bg);color:var(--danger-text);border-color:rgba(185,28,28,.15);}
-.earn-strategy.neutral{background:var(--bg2);color:var(--text2);border-color:var(--border);}
-.earn-strategy-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.earn-company{font-size:12px;color:var(--text2);}
+.earn-est{display:flex;gap:10px;flex-wrap:wrap;}
+.earn-est-item{font-size:11px;color:var(--text2);}
+.earn-est-item strong{color:var(--text);}
+.earn-thesis{font-size:12px;color:var(--text2);line-height:1.55;}
+.earn-strategy{background:var(--success-bg);color:var(--success-text);border-radius:7px;padding:8px 10px;font-size:12px;line-height:1.5;}
+.earn-strategy.bearish{background:var(--danger-bg);color:var(--danger-text);}
+.earn-strategy.neutral{background:var(--bg2);color:var(--text2);}
+.earn-strategy-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
 
-/* ── BEGINNER STOCKS ── */
-.beginner-filter-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-.blist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:24px;}
-.blist-card{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:16px;display:flex;flex-direction:column;gap:10px;
-  box-shadow:var(--shadow-sm);transition:all .2s ease;
-}
-.blist-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.blist-card.long-pick{border-top:3px solid #16a34a;}
-.blist-card.short-pick{border-top:3px solid #d97706;}
+/* BEGINNER STOCKS LIST */
+.beginner-filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.blist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:22px;}
+.blist-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:9px;}
+.blist-card.long-pick{border-top:3px solid #22c55e;}
+.blist-card.short-pick{border-top:3px solid #f59e0b;}
 .blist-head{display:flex;align-items:center;justify-content:space-between;}
-.blist-ticker{font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.blist-price-tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;}
-.price-penny{background:#f5f3ff;color:#6d28d9;}
-.price-low{background:#f0fdf4;color:#15803d;}
-.price-mid{background:#eff6ff;color:#1d4ed8;}
-.price-high{background:#fffbeb;color:#b45309;}
-.price-premium{background:#fef2f2;color:#b91c1c;}
+.blist-ticker{font-size:18px;font-weight:700;color:var(--text);}
+.blist-price-tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.price-penny{background:#ede9fe;color:#4c1d95;}
+.price-low{background:#dcfce7;color:#166534;}
+.price-mid{background:#dbeafe;color:#1e40af;}
+.price-high{background:#fef3c7;color:#92400e;}
+.price-premium{background:#fee2e2;color:#991b1b;}
 @media(prefers-color-scheme:dark){
   .price-penny{background:#2e1065;color:#c4b5fd;}
-  .price-low{background:#052e16;color:#86efac;}
-  .price-mid{background:#1e3a8a;color:#93c5fd;}
-  .price-high{background:#451a03;color:#fcd34d;}
-  .price-premium{background:#450a0a;color:#fca5a5;}
+  .price-low{background:#173404;color:#c0dd97;}
+  .price-mid{background:#042c53;color:#b5d4f4;}
+  .price-high{background:#412402;color:#fac775;}
+  .price-premium{background:#501313;color:#f09595;}
 }
-.blist-company{font-size:11px;color:var(--text3);font-weight:500;}
-.blist-why{font-size:12.5px;color:var(--text2);line-height:1.6;}
-.blist-horizon{border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.55;}
+.blist-company{font-size:11px;color:var(--text2);}
+.blist-why{font-size:12px;color:var(--text2);line-height:1.55;}
+.blist-horizon{border-radius:7px;padding:8px 10px;font-size:11.5px;line-height:1.5;}
 .blist-horizon.long{background:var(--success-bg);color:var(--success-text);}
 .blist-horizon.short{background:var(--warning-bg);color:var(--warning-text);}
-.blist-horizon-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.blist-horizon-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
 .blist-tags{display:flex;gap:6px;flex-wrap:wrap;}
-.blist-tag{
-  font-size:10px;padding:3px 9px;border-radius:20px;
-  background:var(--bg2);color:var(--text2);border:1px solid var(--border);
-  font-weight:600;
-}
+.blist-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border);}
 
-/* ── OPTIONS EXPLAINER ── */
-.options-tab-btns{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-.opt-tab-btn{
-  padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;
-  cursor:pointer;border:1px solid var(--border2);background:var(--bg2);
-  color:var(--text2);transition:all .15s ease;
-}
-.opt-tab-btn:hover{background:var(--bg3);}
-.opt-tab-btn.active{
-  background:var(--accent);color:var(--accent-text);
-  border-color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
+/* OPTIONS EXPLAINER */
+.options-tab-btns{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.opt-tab-btn{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:.5px solid var(--border2);background:var(--bg2);color:var(--text2);transition:all .12s;}
+.opt-tab-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
 .options-panel{display:none;}
 .options-panel.active{display:block;}
-.opt-intro{
-  background:var(--info-bg);color:var(--info-text);
-  border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:20px;
-  font-size:13px;line-height:1.7;border:1px solid rgba(29,78,216,.1);
-}
-.opt-intro h3{font-size:15px;font-weight:700;margin-bottom:7px;}
-.opt-budget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:22px;}
-.opt-budget-card{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:16px;box-shadow:var(--shadow-sm);
-}
-.opt-budget-tier{
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-  margin-bottom:10px;padding:3px 10px;border-radius:20px;display:inline-block;
-}
-.tier-micro{background:#f5f3ff;color:#6d28d9;}
-.tier-starter{background:#f0fdf4;color:#15803d;}
-.tier-mid{background:#eff6ff;color:#1d4ed8;}
-.tier-advanced{background:#fffbeb;color:#b45309;}
+.opt-intro{background:var(--info-bg);color:var(--info-text);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:18px;font-size:13px;line-height:1.65;}
+.opt-intro h3{font-size:15px;font-weight:700;margin-bottom:6px;}
+.opt-budget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px;}
+.opt-budget-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;}
+.opt-budget-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding:3px 9px;border-radius:20px;display:inline-block;}
+.tier-micro{background:#ede9fe;color:#4c1d95;}
+.tier-starter{background:#dcfce7;color:#166534;}
+.tier-mid{background:#dbeafe;color:#1e40af;}
+.tier-advanced{background:#fef3c7;color:#92400e;}
 @media(prefers-color-scheme:dark){
   .tier-micro{background:#2e1065;color:#c4b5fd;}
-  .tier-starter{background:#052e16;color:#86efac;}
-  .tier-mid{background:#1e3a8a;color:#93c5fd;}
-  .tier-advanced{background:#451a03;color:#fcd34d;}
+  .tier-starter{background:#173404;color:#c0dd97;}
+  .tier-mid{background:#042c53;color:#b5d4f4;}
+  .tier-advanced{background:#412402;color:#fac775;}
 }
-.opt-budget-range{font-size:24px;font-weight:800;color:var(--text);margin-bottom:5px;letter-spacing:-.03em;}
-.opt-budget-desc{font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
-.opt-pick-row{background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border);}
+.opt-budget-range{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.opt-budget-desc{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:10px;}
+.opt-pick-row{background:var(--bg2);border-radius:7px;padding:9px 11px;margin-bottom:7px;}
 .opt-pick-row:last-child{margin-bottom:0;}
-.opt-pick-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
-.opt-pick-ticker{font-size:13px;font-weight:800;color:var(--text);}
+.opt-pick-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.opt-pick-ticker{font-size:13px;font-weight:700;color:var(--text);}
 .opt-pick-cost{font-size:12px;font-weight:700;color:var(--success-text);}
-.opt-pick-detail{font-size:12px;color:var(--text2);line-height:1.55;}
-.opt-sell-rule{margin-top:7px;padding-top:7px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text3);}
-.opt-sell-rule strong{color:var(--text2);font-weight:600;}
+.opt-pick-detail{font-size:11px;color:var(--text2);line-height:1.5;}
+.opt-sell-rule{margin-top:6px;padding-top:6px;border-top:.5px solid var(--border);font-size:11px;color:var(--text3);}
+.opt-sell-rule strong{color:var(--text2);}
 .step-list{counter-reset:steps;list-style:none;padding:0;}
-.step-list li{counter-increment:steps;display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
-.step-list li::before{
-  content:counter(steps);min-width:28px;height:28px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent) 0%,#334155 100%);
-  color:var(--accent-text);font-size:12px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;margin-top:2px;box-shadow:0 2px 6px rgba(0,0,0,.15);
-}
-@media(prefers-color-scheme:dark){
-  .step-list li::before{background:linear-gradient(135deg,#f1f5f9 0%,#cbd5e1 100%);color:#0f172a;}
-}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.step-list li::before{content:counter(steps);min-width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-text);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
 .step-content{flex:1;}
-.step-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
-.step-desc{font-size:12.5px;color:var(--text2);line-height:1.6;}
-.step-tip{
-  margin-top:6px;background:var(--warning-bg);color:var(--warning-text);
-  border-radius:8px;padding:6px 10px;font-size:12px;
-  border:1px solid rgba(146,64,14,.1);
-}
+.step-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.55;}
+.step-tip{margin-top:5px;background:var(--warning-bg);color:var(--warning-text);border-radius:6px;padding:5px 9px;font-size:11px;}
 
-/* ── GUIDE GRID ── */
-.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:22px;}
-.guide-card{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:18px;box-shadow:var(--shadow-sm);transition:all .2s ease;
-}
-.guide-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.guide-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:var(--shadow-sm);}
-.guide-title{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text);}
-.guide-body{font-size:12.5px;color:var(--text2);line-height:1.65;}
-.guide-steps{margin-top:8px;padding-left:16px;}
-.guide-steps li{margin-bottom:5px;font-size:12.5px;color:var(--text2);}
-.guide-tip{
-  margin-top:10px;background:var(--bg2);border-radius:8px;
-  padding:8px 10px;font-size:12px;color:var(--text2);
-  border-left:3px solid #d97706;
-}
+/* GUIDE GRID */
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px;}
+.guide-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;}
+.guide-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;}
+.guide-title{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--text);}
+.guide-body{font-size:12px;color:var(--text2);line-height:1.6;}
+.guide-steps{margin-top:7px;padding-left:15px;}
+.guide-steps li{margin-bottom:4px;font-size:12px;color:var(--text2);}
+.guide-tip{margin-top:9px;background:var(--bg2);border-radius:6px;padding:7px 9px;font-size:11.5px;color:var(--text2);border-left:3px solid #f59e0b;}
 
-/* ── MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  display:flex;align-items:center;justify-content:center;z-index:200;
+/* ── MOBILE RESPONSIVE ───────────────────────── */
+@media(max-width:640px){
+  /* Banner */
+  .ticker-banner::before{padding:0 8px;font-size:9px;}
+  /* Header */
+  .header{padding:10px 14px;top:28px;gap:8px;}
+  .logo-sub{display:none;}
+  .date-badge{display:none;}
+  .hdr-r{gap:6px;}
+  .icon-btn{padding:6px 10px;font-size:11px;}
+  /* Controls */
+  .controls{padding:10px 14px;gap:10px;}
+  input[type=range]{width:110px;}
+  .budget-display{min-width:54px;font-size:13px;}
+  .filter-btns{gap:4px;}
+  .fbtn{font-size:11px;padding:4px 9px;}
+  /* Main */
+  .main{padding:12px 14px;}
+  /* Tabs — scrollable horizontal strip */
+  .tabs{gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:8px 12px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+  /* Grids → single column */
+  .picks-grid,.blist-grid,.earnings-grid,.pulse-grid,.guide-grid,.opt-budget-grid{grid-template-columns:1fr;}
+  .sum-row{grid-template-columns:repeat(3,1fr);}
+  /* Pulse two-col → one col */
+  #pulseTopRow{grid-template-columns:1fr!important;}
+  /* Card tweaks */
+  .price-main{font-size:18px;}
+  .ticker-sym{font-size:15px;}
+  .card-foot{flex-wrap:wrap;}
+  .buy-btn{min-width:0;font-size:11px;padding:7px 8px;}
+  /* Options 101 sub-tabs */
+  .options-tab-btns{gap:6px;}
+  .opt-tab-btn{padding:6px 12px;font-size:12px;}
+  /* Outcomes table — horizontal scroll */
+  .table-wrap{overflow-x:auto;}
+  table{min-width:560px;}
+  /* Modal */
+  .modal{padding:20px 16px;}
+  /* Beginner steps */
+  .step-list li{gap:9px;}
+  .step-list li::before{min-width:22px;height:22px;font-size:11px;}
+  /* Earnings */
+  .earn-head{flex-wrap:wrap;gap:6px;}
+  /* Summary row */
+  .sum-val{font-size:17px;}
+  .sum-label{font-size:10px;}
 }
-.modal{
-  background:var(--bg);border-radius:20px;padding:28px;
-  max-width:440px;width:90%;border:1px solid var(--border);
-  box-shadow:var(--shadow-lg);animation:modalIn .2s ease;
+@media(max-width:400px){
+  .sum-row{grid-template-columns:repeat(2,1fr);}
+  .filter-btns{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+  .fbtn{flex-shrink:0;}
 }
-@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.modal h2{font-size:17px;font-weight:800;margin-bottom:7px;letter-spacing:-.02em;}
-.modal p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:15px;}
-.modal input{
-  width:100%;padding:11px 14px;border-radius:10px;
-  border:1px solid var(--border2);background:var(--bg2);color:var(--text);
-  font-size:13px;font-family:monospace;margin-bottom:13px;outline:none;
-  transition:border-color .15s ease;
-}
-.modal input:focus{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.1);}
-@media(prefers-color-scheme:dark){.modal input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(147,197,253,.1);}}
-.modal-foot{display:flex;gap:10px;}
-.modal-foot button{
-  flex:1;padding:10px;border-radius:10px;font-size:13px;
-  font-weight:700;cursor:pointer;border:none;transition:all .15s ease;
-}
-.modal-foot button:hover{transform:translateY(-1px);opacity:.9;}
-.btn-save{background:linear-gradient(135deg,#1e293b 0%,#334155 100%);color:#fff;}
-@media(prefers-color-scheme:dark){.btn-save{background:linear-gradient(135deg,#f1f5f9 0%,#cbd5e1 100%);color:#0f172a;}}
-.btn-cancel{background:var(--bg2);color:var(--text);border:1px solid var(--border2);}
-.modal-link{font-size:12px;color:var(--info-text);text-decoration:none;font-weight:500;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;}
+.modal{background:var(--bg);border-radius:var(--radius-lg);padding:24px;max-width:440px;width:100%;border:.5px solid var(--border);}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:6px;}
+.modal p{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:13px;}
+.modal input{width:100%;padding:10px 12px;border-radius:8px;border:.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;font-family:monospace;margin-bottom:11px;outline:none;}
+.modal input:focus{border-color:var(--accent);}
+.modal-foot{display:flex;gap:9px;}
+.modal-foot button{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+.btn-save{background:var(--accent);color:var(--accent-text);}
+.btn-cancel{background:var(--bg2);color:var(--text);border:.5px solid var(--border2);}
+.modal-link{font-size:12px;color:var(--info-text);text-decoration:none;}
 .modal-link:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     API KEY MODAL
-     Full-screen overlay that prompts the user for their Anthropic key.
-     Hidden by default (.hidden); shown on load if no key is stored,
-     or when the user clicks "API Key" in the header.
-     The key is saved to localStorage — never sent anywhere except Anthropic.
-     ═══════════════════════════════════════════════════════════ -->
+<!-- API Key Modal -->
 <div class="modal-overlay hidden" id="apiModal">
   <div class="modal">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <div class="logo-icon" style="width:30px;height:30px"><i class="ti ti-key" style="color:#4ade80;font-size:15px"></i></div>
-      <h2 style="margin:0">Anthropic API key</h2>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="logo-icon" style="width:36px;height:36px;flex-shrink:0"><i class="ti ti-trending-up" style="color:#4ade80;font-size:18px"></i></div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text)">Welcome to PulseTrader</div>
+        <div style="font-size:12px;color:var(--text2)">AI-powered daily stock &amp; options picks</div>
+      </div>
     </div>
-    <p>PulseTrader uses Claude AI for all picks, pulse, and recommendations. Your key is saved only in your browser's localStorage.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off">
-    <div style="margin-bottom:13px"><a class="modal-link" href="https://console.anthropic.com/settings/keys" target="_blank"><i class="ti ti-external-link" style="font-size:11px;vertical-align:-1px"></i> Get a key at console.anthropic.com</a></div>
+    <p>To use PulseTrader, you need a free Anthropic API key. Your key is saved only in <strong>your browser</strong> — it's never shared with anyone else.</p>
+    <div style="background:var(--info-bg);color:var(--info-text);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;font-size:12px;line-height:1.55;">
+      <strong>First time?</strong> Get a free API key in 2 minutes:<br>
+      1. Go to <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--info-text);font-weight:700">console.anthropic.com/settings/keys</a><br>
+      2. Sign up for a free account → click <strong>Create Key</strong><br>
+      3. Copy the key (starts with <code style="font-size:11px">sk-ant-</code>) and paste it below
+    </div>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off"
+      onkeydown="if(event.key==='Enter')saveApiKey()">
+    <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:11px;color:var(--text3)"><i class="ti ti-lock" style="font-size:11px;vertical-align:-1px"></i> Saved locally, never shared</span>
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" style="font-size:12px;color:var(--info-text);text-decoration:none">Get API key →</a>
+    </div>
     <div class="modal-foot">
-      <button class="btn-save" onclick="saveApiKey()">Save &amp; Load</button>
+      <button class="btn-save" onclick="saveApiKey()">Save &amp; Start Loading</button>
       <button class="btn-cancel" onclick="document.getElementById('apiModal').classList.add('hidden')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     TICKER BANNER
-     Dark gradient strip at the very top of the page.
-     #tickerTrack is empty on load; renderBanner() fills it with
-     scrolling ticker items, then loadBanner() replaces them with AI data.
-     The CSS animation (.ticker-track) auto-scrolls; hover pauses it.
-     ═══════════════════════════════════════════════════════════ -->
+<!-- Ticker Banner -->
 <div class="ticker-banner"><div class="ticker-track" id="tickerTrack"></div></div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     STICKY HEADER
-     Glassmorphism bar that sticks below the ticker banner (top:36px).
-     Left: logo + tagline. Right: date badge, market open/closed pill,
-     API Key button, and Refresh button.
-     ═══════════════════════════════════════════════════════════ -->
 <!-- Header -->
 <header class="header">
   <div class="logo">
@@ -674,14 +427,6 @@ tbody tr:hover{background:var(--bg2);}
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════
-     CONTROLS BAR
-     White bar beneath the header containing:
-       • Budget slider ($20–$25,000) + dollar display
-       • "Budget mode active" notice pill (shown when budget ≤ $1,000)
-       • Filter pills: All / Stocks / Calls / Puts / Long-term / Short-term
-     Changing any control calls renderPicks() — no new API call.
-     ═══════════════════════════════════════════════════════════ -->
 <!-- Controls -->
 <div class="controls">
   <div style="display:flex;align-items:center;gap:10px">
@@ -714,14 +459,6 @@ tbody tr:hover{background:var(--bg2);}
     <button class="tab" onclick="switchTab(this,'options101')">Options 101</button>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: TODAY'S PICKS
-       Default tab. Contains:
-         • Budget callout banner (visible when budget ≤ $1,000)
-         • 6 summary stat cards (#summaryRow) — hidden until picks load
-         • #picksGrid — filled by renderPicks() with .pick-card elements
-       Data fetched in 2 batches by loadPicks(); cached by date in localStorage.
-       ───────────────────────────────────────────────────────── -->
   <!-- TODAY'S PICKS -->
   <div id="tab-today">
     <div id="budgetCallout" class="hidden" style="background:var(--info-bg);color:var(--info-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:8px;">
@@ -739,13 +476,6 @@ tbody tr:hover{background:var(--bg2);}
     <div class="picks-grid" id="picksGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Generating 50 AI picks…</div></div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: WEEKLY EARNINGS CALLS
-       Shows 8 companies reporting earnings this week.
-       Each card has a verdict (hot/watch/avoid), EPS estimates,
-       a thesis, and a bullish/bearish/neutral options strategy.
-       Loaded lazily by loadEarnings() on first tab click.
-       ───────────────────────────────────────────────────────── -->
   <!-- WEEKLY EARNINGS CALLS -->
   <div id="tab-earnings" class="hidden">
     <div style="background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;">
@@ -756,15 +486,6 @@ tbody tr:hover{background:var(--bg2);}
     <div class="earnings-grid" id="earningsGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Loading earnings calendar…</div></div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: MARKET PULSE
-       Real-time-style market catalyst feed. Layout:
-         • Left column: Social Buzz Heatmap (#heatTable) — ranked bar chart
-         • Right column: Today's Catalyst Summary (#pulseSummaryBox) — AI prose
-         • Full-width below: Breaking Catalysts grid (#pulseGrid) — 6 cards
-       Categories: political, social, earnings, insider, meme, macro.
-       Loaded lazily by loadPulse() on first tab click.
-       ───────────────────────────────────────────────────────── -->
   <!-- MARKET PULSE -->
   <div id="tab-pulse" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
@@ -791,13 +512,6 @@ tbody tr:hover{background:var(--bg2);}
     <div class="pulse-grid" id="pulseGrid"><div class="loading-state" style="grid-column:1/-1"><i class="ti ti-loader-2"></i>Scanning news and social media…</div></div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: PAST OUTCOMES
-       Static hardcoded data — no API call. Shows historical pick
-       performance in a table (date, ticker, type, horizon, entry,
-       exit, return %, outcome). To add real trades, update the
-       PAST_OUTCOMES array in the JS constants section above.
-       ───────────────────────────────────────────────────────── -->
   <!-- PAST OUTCOMES -->
   <div id="tab-outcomes" class="hidden">
     <div class="sum-row">
@@ -813,13 +527,6 @@ tbody tr:hover{background:var(--bg2);}
     </table></div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: BEGINNER'S GUIDE
-       Fully static — no API call. Six how-to guide cards covering:
-       buying a stock, buying a call, buying a put, short vs long-term,
-       starting with a small budget, and risk management basics.
-       To edit content, find the .guide-card divs below and change text.
-       ───────────────────────────────────────────────────────── -->
   <!-- BEGINNER'S GUIDE -->
   <div id="tab-guide" class="hidden">
     <div class="section-title"><i class="ti ti-school"></i> How to buy — step by step</div>
@@ -874,14 +581,6 @@ tbody tr:hover{background:var(--bg2);}
     </div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: STARTER STOCKS
-       AI-generated list of 28 stocks across all price ranges.
-       Filter pills: All prices / $2–$10 / $10–$50 / $50–$500 /
-                     $500–$5k / $5k+ / Long-term only / Short-term only
-       Each card includes: why to buy, hold guidance, sell signals, tags, risk.
-       Loaded lazily by loadStarterStocks(); filtered locally by renderStarterCards().
-       ───────────────────────────────────────────────────────── -->
   <!-- STARTER STOCKS -->
   <div id="tab-bstocks" class="hidden">
     <div style="background:var(--success-bg);color:var(--success-text);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;line-height:1.55;">
@@ -905,16 +604,6 @@ tbody tr:hover{background:var(--bg2);}
     <div class="blist-grid" id="blistGrid"><div class="loading-state"><i class="ti ti-loader-2"></i>Generating starter stocks…</div></div>
   </div>
 
-  <!-- ─────────────────────────────────────────────────────────
-       TAB: OPTIONS 101
-       Four budget-tier panels (micro / starter / mid / advanced).
-       Each panel has:
-         • A budget-level description callout
-         • AI-generated option pick cards (#opt-{tier}-picks)
-         • A static step-by-step selling rules list (.step-list)
-       The advanced panel also covers the Greeks (delta, theta, vega, straddle).
-       Loaded lazily by loadOptionsPicks(); rendered by renderOptPicks().
-       ───────────────────────────────────────────────────────── -->
   <!-- OPTIONS 101 -->
   <div id="tab-options101" class="hidden">
     <div class="opt-intro">
@@ -997,173 +686,125 @@ tbody tr:hover{background:var(--bg2);}
 
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────────
-// Maps each ticker symbol to [background color, text color] for the logo chip on pick cards
 const TICKER_COLORS={AAPL:['#e8f0fe','#1967d2'],MSFT:['#e3f2fd','#1565c0'],NVDA:['#e8f5e9','#2e7d32'],TSLA:['#fce4ec','#c62828'],AMZN:['#fff8e1','#e65100'],META:['#e8eaf6','#283593'],GOOGL:['#f3e5f5','#6a1b9a'],AMD:['#fbe9e7','#bf360c'],SPY:['#e0f2f1','#00695c'],QQQ:['#f1f8e9','#33691e'],INTC:['#f9fbe7','#558b2f'],DIS:['#e8eaf6','#1a237e'],NFLX:['#fee2e2','#991b1b'],COIN:['#ede9fe','#4c1d95'],PLTR:['#e0f2f1','#004d40'],SOFI:['#e8f0fe','#0d47a1'],F:['#fff8e1','#e65100'],UBER:['#1c1c1a','#e8e8e4'],SNAP:['#fef9c3','#713f12'],GME:['#dcfce7','#14532d'],AMC:['#fee2e2','#7f1d1d'],HOOD:['#ede9fe','#3b0764'],RIVN:['#e0f7fa','#006064'],LCID:['#e8f5e9','#1b5e20'],MARA:['#fef3c7','#78350f'],RIOT:['#fce7f3','#831843']};
-// Hardcoded historical trade results shown in the "Past Outcomes" tab table
 const PAST_OUTCOMES=[{date:'Jun 19',ticker:'NVDA',type:'CALL',horizon:'Short',entry:'$127.40',exit:'$171.20',ret:'+34.4%',outcome:'win'},{date:'Jun 19',ticker:'AAPL',type:'STOCK',horizon:'Long',entry:'$211.00',exit:'$218.30',ret:'+3.5%',outcome:'win'},{date:'Jun 18',ticker:'INTC',type:'PUT',horizon:'Short',entry:'$0.85',exit:'$0.40',ret:'−52.9%',outcome:'loss'},{date:'Jun 18',ticker:'META',type:'CALL',horizon:'Short',entry:'$580.00',exit:'$611.50',ret:'+5.4%',outcome:'win'},{date:'Jun 17',ticker:'TSLA',type:'STOCK',horizon:'Long',entry:'$248.70',exit:'$261.10',ret:'+5.0%',outcome:'win'},{date:'Jun 17',ticker:'AMD',type:'CALL',horizon:'Short',entry:'$1.20',exit:'$1.85',ret:'+54.2%',outcome:'win'},{date:'Jun 16',ticker:'SPY',type:'PUT',horizon:'Short',entry:'$2.10',exit:'$3.40',ret:'+61.9%',outcome:'win'},{date:'Jun 16',ticker:'MSFT',type:'STOCK',horizon:'Long',entry:'$448.20',exit:'$431.00',ret:'−3.8%',outcome:'loss'},{date:'Jun 15',ticker:'AMZN',type:'CALL',horizon:'Short',entry:'$0.95',exit:'—',ret:'—',outcome:'pending'},{date:'Jun 15',ticker:'GOOGL',type:'STOCK',horizon:'Long',entry:'$178.40',exit:'$186.70',ret:'+4.6%',outcome:'win'}];
-// Static ticker data shown in the scrolling banner before the AI-loaded version arrives
 const BANNER_FALLBACK=[{ticker:'NVDA',price:'$875.40',chg:'+2.1%',up:true,reason:'AI chip demand'},{ticker:'AAPL',price:'$213.20',chg:'+0.8%',up:true,reason:'WWDC buzz'},{ticker:'META',price:'$501.30',chg:'+1.4%',up:true,reason:'AI ad growth'},{ticker:'TSLA',price:'$248.70',chg:'−1.2%',up:false,reason:'Delivery fears'},{ticker:'AMD',price:'$158.90',chg:'+3.2%',up:true,reason:'MI300X demand'}];
-// Maps catalyst category names → CSS class names for colored badge styling
 const CAT_CLASSES={political:'cat-political',social:'cat-social',earnings:'cat-earnings',insider:'cat-insider',meme:'cat-meme',macro:'cat-macro'};
-// Maps catalyst category names → Tabler icon class names for the badge icon
 const CAT_ICONS={political:'ti-building-government',social:'ti-brand-twitter',earnings:'ti-report-money',insider:'ti-user-dollar',meme:'ti-rocket',macro:'ti-world'};
 
-// Global state:
-//   allPicks      — full array of AI-generated pick objects fetched from Claude
-//   currentFilter — active filter pill value: 'all'|'stock'|'call'|'put'|'long'|'short'
-//   budget        — current slider value in dollars (default $2,000)
-//   pulseLoaded / earningsLoaded / starterLoaded / optLoaded — lazy-load flags so tabs only fetch once
-//   bFilter       — active price-range filter on the Starter Stocks tab
 let allPicks=[],currentFilter='all',budget=2000,pulseLoaded=false,earningsLoaded=false,starterLoaded=false,optLoaded=false,bFilter='all';
 const today=new Date();
 
 // ── INIT ──────────────────────────────────────────────────────
-// Writes today's formatted date into the header badge (e.g. "Mon, Jun 23, 2026")
 document.getElementById('dateDisplay').textContent=today.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-// Market is open Mon–Fri between 9 AM and 4 PM local time
 const hour=today.getHours(),isOpen=today.getDay()>=1&&today.getDay()<=5&&hour>=9&&hour<16;
-// Sets the Market Open / Market Closed pill color and text in the header
 const ms=document.getElementById('marketStatus');
 ms.textContent=isOpen?'● Market Open':'● Market Closed';
 ms.className='market-pill '+(isOpen?'market-open':'market-closed');
 
 // ── BANNER ────────────────────────────────────────────────────
-// Builds the scrolling ticker strip by doubling the array so the CSS animation loops seamlessly
 function renderBanner(picks){
   document.getElementById('tickerTrack').innerHTML=[...picks,...picks].map(p=>`<div class="ticker-item"><span class="ticker-sym">${p.ticker}</span><span class="${p.up?'ticker-up':'ticker-dn'}">${p.chg}</span><span class="ticker-reason">${p.reason}</span></div>`).join('');
 }
-// Show the static fallback immediately so the banner isn't blank on first load
 renderBanner(BANNER_FALLBACK);
-// loadBanner: fetches AI-generated trending tickers; caches by date so it only calls the API once per day
 async function loadBanner(k){
-  const ck='pt_banner_'+today.toISOString().slice(0,10); // cache key e.g. "pt_banner_2026-06-23"
+  const ck='pt_banner_'+today.toISOString().slice(0,10);
   const c=localStorage.getItem(ck);
-  if(c){try{renderBanner(JSON.parse(c));return;}catch(e){}} // use cached version if it exists
+  if(c){try{renderBanner(JSON.parse(c));return;}catch(e){}}
   try{
     const r=await apiFetch(k,`Generate top 5 trending stocks today. JSON array only: [{"ticker":"NVDA","price":"$875","chg":"+2.1%","up":true,"reason":"AI demand"}]. 5 items, reason 2-4 words.`,300);
     const items=safeParseJSON(r);
-    localStorage.setItem(ck,JSON.stringify(items));renderBanner(items); // save to cache then render
-  }catch(e){} // silently fail — fallback banner is already showing
+    localStorage.setItem(ck,JSON.stringify(items));renderBanner(items);
+  }catch(e){}
 }
 
-// ── API HELPERS ───────────────────────────────────────────────
-// Returns the stored Anthropic API key from localStorage (empty string if not set)
+// ── API KEY ───────────────────────────────────────────────────
 function getApiKey(){return localStorage.getItem('pulsetrader_apikey')||'';}
-
-// saveApiKey: reads the key from the modal input, stores it, closes the modal, then triggers a fresh load
-function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(!k){alert('Please enter an API key.');return;}localStorage.setItem('pulsetrader_apikey',k);document.getElementById('apiModal').classList.add('hidden');loadPicks(true);loadBanner(k);}
-
-// showApiModal: pre-fills the input with any existing key so the user can update it, then shows the overlay
-function showApiModal(){document.getElementById('apiKeyInput').value=getApiKey();document.getElementById('apiModal').classList.remove('hidden');}
-
-// apiFetch: central function that calls the Claude API with a given prompt
-//   apiKey    — Anthropic key from localStorage
-//   prompt    — the instruction sent to Claude
-//   maxTokens — response length limit (higher = more picks, lower = faster + cheaper)
-// Returns the plain text of Claude's reply, or throws an Error with the API's message
+function saveApiKey(){
+  const k=document.getElementById('apiKeyInput').value.trim();
+  if(!k){alert('Please enter your Anthropic API key.');return;}
+  localStorage.setItem('pulsetrader_apikey',k);
+  document.getElementById('apiModal').classList.add('hidden');
+  loadPicks(true);
+  loadBanner(k);
+}
+function showApiModal(){
+  document.getElementById('apiKeyInput').value=getApiKey();
+  document.getElementById('apiModal').classList.remove('hidden');
+}
 async function apiFetch(apiKey,prompt,maxTokens=2000){
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
-  if(!res.ok){const e=await res.json().catch(()=>({error:{message:'Unknown'}}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({error:{message:`HTTP ${res.status}`}}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
   const d=await res.json();
-  return d.content?.find(b=>b.type==='text')?.text||''; // extract only the text block from Claude's response
+  return d.content?.find(b=>b.type==='text')?.text||'';
 }
 
 // ── CONTROLS ──────────────────────────────────────────────────
-// Budget slider: updates the dollar display and re-renders picks filtered to the new budget cap
 document.getElementById('budgetSlider').addEventListener('input',e=>{
   budget=parseInt(e.target.value);
   document.getElementById('budgetDisplay').textContent='$'+budget.toLocaleString();
   const notice=document.getElementById('budgetNotice'),callout=document.getElementById('budgetCallout');
-  // Show "Budget mode active" pill and callout banner when budget is $1,000 or less
   if(budget<=1000){notice.classList.add('show');callout.classList.remove('hidden');document.getElementById('budgetCalloutText').textContent=`Budget mode: showing picks under $${budget.toLocaleString()}. Look for ⭐ Budget Pick cards — cheap options contracts and fractional-share stocks.`;}
   else{notice.classList.remove('show');callout.classList.add('hidden');}
-  renderPicks(); // re-filter the already-loaded picks — no new API call needed
+  renderPicks();
 });
-
-// setFilter: handles the All/Stocks/Calls/Puts/Long/Short pill buttons above the picks grid
 function setFilter(btn){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentFilter=btn.dataset.type;renderPicks();}
-
-// setBFilter: handles price-range filter buttons on the Starter Stocks tab (penny / low / mid / high / premium)
 function setBFilter(btn){document.querySelectorAll('[data-bf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');bFilter=btn.dataset.bf;renderStarterCards();}
-
-// switchTab: shows the selected tab panel and hides the rest; triggers lazy data load on first visit
 function switchTab(btn,tab){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  // Toggle visibility of every tab panel in one pass
   ['today','earnings','pulse','outcomes','guide','bstocks','options101'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
-  // Lazy-load: only fetch data the first time a tab is opened (flags prevent duplicate API calls)
   if(tab==='pulse'&&!pulseLoaded)loadPulse();
   if(tab==='earnings'&&!earningsLoaded)loadEarnings();
   if(tab==='bstocks'&&!starterLoaded)loadStarterStocks();
   if(tab==='options101'&&!optLoaded)loadOptionsPicks();
 }
-
-// switchOptTab: switches between budget-tier panels inside the Options 101 tab (micro/starter/mid/advanced)
 function switchOptTab(btn,tier){document.querySelectorAll('.opt-tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.options-panel').forEach(p=>p.classList.remove('active'));document.getElementById('opt-'+tier).classList.add('active');}
-
-// toggleHow: expands/collapses the "How to buy" accordion on each pick card; rotates the chevron icon
 function toggleHow(el){const b=el.querySelector('.how-body'),ic=el.querySelector('.how-toggle');b.classList.toggle('open');if(ic)ic.style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0)';}
 
 // ── RENDER HELPERS ────────────────────────────────────────────
-// Returns an inline style string for the ticker logo chip — uses TICKER_COLORS map, falls back to grey
 function tickerStyle(t){const c=TICKER_COLORS[t]||['#f0efec','#555'];return `background:${c[0]};color:${c[1]}`;}
-
-// renderOutcomes: builds the Past Outcomes table rows from the hardcoded PAST_OUTCOMES array
-//   Colors the return cell green (up) or red (down); shows win/loss/pending pill in the last column
 function renderOutcomes(){document.getElementById('outcomesBody').innerHTML=PAST_OUTCOMES.map(o=>{const rc=o.ret.startsWith('+')?'up':o.ret==='—'?'':'down';return `<tr><td style="color:var(--text2)">${o.date}</td><td><strong>${o.ticker}</strong></td><td><span class="type-badge badge-${o.type.toLowerCase()}">${o.type}</span></td><td><span class="pill ${o.horizon==='Long'?'pill-win':'pill-pending'}">${o.horizon}</span></td><td>${o.entry}</td><td>${o.exit}</td><td class="${rc}" style="font-weight:700">${o.ret}</td><td><span class="pill pill-${o.outcome}">${o.outcome==='win'?'✓ Win':o.outcome==='loss'?'✗ Loss':'⏳ Open'}</span></td></tr>`;}).join('');}
 
 // ── RENDER PICKS ──────────────────────────────────────────────
-// renderPicks: filters allPicks by current budget + pill filter, updates the summary row, then builds card HTML
-// Called any time the budget slider moves or a filter button is clicked — no new API call, just re-renders
 function renderPicks(){
   const grid=document.getElementById('picksGrid');
-
-  // Filter: exclude picks that cost more than the budget, then apply type/horizon filter
   const visible=allPicks.filter(p=>{
-    if(p.maxEntry>budget)return false;      // drop picks too expensive for the current budget
+    if(p.maxEntry>budget)return false;
     if(currentFilter==='all')return true;
     if(currentFilter==='long')return p.horizon==='long';
     if(currentFilter==='short')return p.horizon==='short';
-    return p.type===currentFilter;          // 'stock' | 'call' | 'put'
+    return p.type===currentFilter;
   });
-
-  // If nothing matches, hide the summary row and show an empty-state message
   if(!visible.length){document.getElementById('summaryRow').style.display='none';grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-filter-off"></i><strong>No picks match your filters.</strong><br>Try raising your budget or selecting "All".</div>`;return;}
-
-  // Update the 6 summary stat cards above the grid
   document.getElementById('summaryRow').style.display='grid';
   document.getElementById('sumTotal').textContent=visible.length;
-  document.getElementById('sumConf').textContent=Math.round(visible.reduce((s,p)=>s+p.confidence,0)/visible.length)+'%'; // average confidence
-  document.getElementById('sumExp').textContent='$'+visible.reduce((s,p)=>s+p.maxEntry,0).toLocaleString(); // total if all entered
+  document.getElementById('sumConf').textContent=Math.round(visible.reduce((s,p)=>s+p.confidence,0)/visible.length)+'%';
+  document.getElementById('sumExp').textContent='$'+visible.reduce((s,p)=>s+p.maxEntry,0).toLocaleString();
   document.getElementById('sumLong').textContent=visible.filter(p=>p.horizon==='long').length;
   document.getElementById('sumShort').textContent=visible.filter(p=>p.horizon==='short').length;
-  document.getElementById('sumBudget').textContent=visible.filter(p=>p.maxEntry<=300).length; // "⭐ Budget Pick" count
-
+  document.getElementById('sumBudget').textContent=visible.filter(p=>p.maxEntry<=300).length;
   grid.innerHTML=visible.map(p=>{
-    const bc=`badge-${p.type}`,                           // CSS class for the type pill (call/put/stock)
-          bl=p.type==='call'?'Call':p.type==='put'?'Put':'Stock', // human label
-          ex=p.expiry?` · ${p.expiry}`:'';                // expiry string appended to options badge only
-    const cc=p.confidence>=75?'#22c55e':p.confidence>=55?'#f59e0b':'#ef4444', // bar color: green/amber/red
-          ib=p.maxEntry<=300;                              // ib = "is budget" — triggers gold outline + badge
+    const bc=`badge-${p.type}`,bl=p.type==='call'?'Call':p.type==='put'?'Put':'Stock',ex=p.expiry?` · ${p.expiry}`:'';
+    const cc=p.confidence>=75?'#22c55e':p.confidence>=55?'#f59e0b':'#ef4444',ib=p.maxEntry<=300;
     const rh=`https://robinhood.com/stocks/${p.ticker}`,wb=`https://www.webull.com/quote/${p.ticker.toLowerCase()}`;
-
-    // hH: horizon block — green "Long-term hold" or amber "Short-term · Sell by" depending on horizon value
     const hH=p.horizon==='long'?`<div class="horizon-block long"><div class="horizon-header"><i class="ti ti-calendar-month" style="font-size:12px"></i> Long-term hold</div><div class="horizon-body">${p.horizonNote}</div></div>`:`<div class="horizon-block short"><div class="horizon-header"><i class="ti ti-clock-bolt" style="font-size:12px"></i> Short-term · Sell by: ${p.sellBy||'within 1–5 days'}</div><div class="horizon-body">${p.horizonNote}</div></div>`;
-
-    // hG: "How to buy" step-by-step instructions — different copy for stock vs call vs put
     const hG=p.type==='stock'?`<ol><li>Search <strong>${p.ticker}</strong> on Robinhood or Webull.</li><li>Tap Buy → enter a dollar amount (fractional OK). Use Limit Order within <strong>${p.entryRange}</strong>.</li><li>Stop at <strong>${p.stopLoss}</strong>, target <strong>${p.target}</strong>.</li></ol>`:p.type==='call'?`<ol><li>Open <strong>${p.ticker}</strong> options chain.</li><li>Select Call, expiry <strong>${p.expiry}</strong>.</li><li>Pick a strike near current price. Each contract = 100 shares.</li><li>Buy 1 contract with your budget. Sell when target hit — don't hold to expiry.</li></ol>`:`<ol><li>Open <strong>${p.ticker}</strong> options chain.</li><li>Select Put, expiry <strong>${p.expiry}</strong>.</li><li>Strike at or slightly below current price.</li><li>Puts profit when stock falls. Sell before expiry to avoid full time-decay loss.</li></ol>`;
-
-    // Build the full pick card HTML — budget-friendly cards get a gold outline via .budget-friendly class
     return `<div class="pick-card ${p.type}${ib?' budget-friendly':''}"><div class="card-head"><div class="ticker-block"><div class="ticker-logo" style="${tickerStyle(p.ticker)}">${p.ticker.slice(0,3)}</div><div><div class="ticker-sym">${p.ticker}</div><div class="ticker-co">${p.company}</div></div></div><div class="badges"><span class="type-badge ${bc}">${bl}${ex}</span>${ib?'<span class="badge-budget">⭐ Budget</span>':''}</div></div><div class="price-row"><span class="price-main">${p.price}</span><span class="price-chg ${p.direction==='up'?'up':'down'}">${p.change}</span></div><div class="meta-grid"><div class="meta-item"><div class="meta-lbl">Entry range</div><div class="meta-val">${p.entryRange}</div></div><div class="meta-item"><div class="meta-lbl">Target</div><div class="meta-val">${p.target}</div></div><div class="meta-item"><div class="meta-lbl">Stop loss</div><div class="meta-val">${p.stopLoss}</div></div><div class="meta-item"><div class="meta-lbl">Max invest</div><div class="meta-val">$${p.maxEntry.toLocaleString()}</div></div></div><div class="thesis">${p.thesis}</div>${hH}<div class="conf-bar"><div class="conf-head"><span class="conf-lbl">AI confidence</span><span class="conf-pct">${p.confidence}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${p.confidence}%;background:${cc}"></div></div></div><div class="how-block" onclick="toggleHow(this)"><div class="how-header"><span><i class="ti ti-help-circle" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>How to buy this ${bl.toLowerCase()}</span><i class="ti ti-chevron-down how-toggle" style="font-size:13px;transition:transform .2s"></i></div><div class="how-body">${hG}</div></div><div class="card-foot"><a href="${rh}" target="_blank" class="buy-btn btn-primary"><i class="ti ti-external-link"></i> Robinhood</a><a href="${wb}" target="_blank" class="buy-btn btn-secondary"><i class="ti ti-external-link"></i> Webull</a></div></div>`;
   }).join('');
 }
 
 // ── JSON REPAIR ───────────────────────────────────────────────
-// safeParseJSON: strips markdown code fences Claude sometimes wraps around JSON, then parses
-// If Claude's response is truncated mid-array (token limit hit), it tries to salvage
-// whatever complete objects exist by trimming to the last closing brace and re-closing the array
 function safeParseJSON(text){
-  const clean=text.replace(/```json|```/g,'').trim(); // remove ```json ... ``` wrappers
+  const clean=text.replace(/```json|```/g,'').trim();
   try{return JSON.parse(clean);}catch(e){
     // Attempt to repair truncated JSON array by finding last complete object
     const lastBrace=clean.lastIndexOf('}');
@@ -1171,63 +812,40 @@ function safeParseJSON(text){
     let repaired=clean.slice(0,lastBrace+1);
     // Close array if needed
     if(!repaired.trimEnd().endsWith(']'))repaired+=']';
-    // Remove trailing comma before close (e.g. [...},] → [...}])
+    // Remove trailing comma before close
     repaired=repaired.replace(/,\s*\]/g,']');
     try{return JSON.parse(repaired);}catch(e2){throw new Error('Could not parse response. Try again.');}
   }
 }
 
-// ── LOAD PICKS (2 batches of 25) ─────────────────────────────
-// loadPicks: main data-fetch function for Today's Picks tab
-//   force=false — use cached picks from localStorage if available (avoids burning API tokens)
-//   force=true  — always re-fetch fresh from Claude (triggered by the Refresh button)
-// Sends 2 separate API calls (25 picks each) to stay within token limits, then merges them
+// ── LOAD PICKS (2 batches PARALLEL) ──────────────────────────
 async function loadPicks(force=false){
-  const k=getApiKey();if(!k){showApiModal();return;} // prompt for key if not yet stored
-  const ck='pt_picks_v4_'+today.toISOString().slice(0,10); // date-keyed cache; resets daily
+  const k=getApiKey();if(!k){showApiModal();return;}
+  const ck='pt_picks_v4_'+today.toISOString().slice(0,10);
   if(!force){const c=localStorage.getItem(ck);if(c){try{allPicks=JSON.parse(c);renderPicks();return;}catch(e){}}}
-  document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 1 of 2…</div>';
+  document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Generating picks — fetching both batches simultaneously…</div>';
   document.getElementById('summaryRow').style.display='none';
-  const dateStr=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-
-  // JSON schema example sent to Claude so it knows the exact shape of each pick object
-  const schema=`{"ticker":"AAPL","company":"Apple Inc.","type":"stock","price":"$211.40","change":"+1.2%","direction":"up","entryRange":"$209-$213","target":"$225","stopLoss":"$204","maxEntry":500,"expiry":null,"confidence":78,"horizon":"long","horizonNote":"Hold 6-12 months.","sellBy":null,"thesis":"Breaking out above 200-day MA."}`;
-
-  // makePrompt: factory that builds the Claude prompt for a given batch and ticker list
-  const makePrompt=(batch,tickers)=>`Stock analyst for ${dateStr}. Generate exactly 25 trading picks (batch ${batch}/2).
-Include budget range: some maxEntry under $200, some $200-$1000, some $1000+. Mix stocks/calls/puts, long/short horizon.
-Tickers to use (pick 25 unique): ${tickers}
-Respond ONLY with a JSON array of 25 objects. No markdown. Schema: [${schema}]
-Rules: type="stock"|"call"|"put", horizon="long"|"short", expiry="Jul 18" for options or null for stocks, sellBy=date string for short picks or null, confidence=50-92, direction="up"|"down", thesis=1 sentence.`;
-
-  // Two ticker lists — batch 1 uses large-cap / meme stocks, batch 2 uses different names to avoid duplicates
-  const tickers1='AAPL,MSFT,NVDA,TSLA,META,AMZN,GOOGL,AMD,SPY,QQQ,PLTR,SOFI,F,COIN,NFLX,DIS,UBER,SNAP,GME,AMC,HOOD,RIVN,MARA,RIOT,JPM';
-  const tickers2='INTC,BA,GS,WMT,COST,PFE,JNJ,XOM,CVX,NIO,SHOP,SQ,PYPL,BABA,LCID,SMCI,DELL,CRWD,NET,RBLX,DKNG,OPEN,CLOV,SNDL,BBBY';
-
+  const dateStr=today.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  const schema=`{"ticker":"AAPL","company":"Apple Inc.","type":"stock","price":"$211","change":"+1.2%","direction":"up","entryRange":"$209-$213","target":"$225","stopLoss":"$204","maxEntry":500,"expiry":null,"confidence":78,"horizon":"long","horizonNote":"Hold 6-12 months.","sellBy":null,"thesis":"Strong AI tailwinds."}`;
+  const makePrompt=(batch,tickers)=>`Stock analyst ${dateStr}. 25 picks batch ${batch}/2. Mix stocks/calls/puts, long/short, budgets $50-$5000. Tickers: ${tickers}. JSON array only, no markdown: [${schema}]. Rules: type=stock|call|put, horizon=long|short, expiry="Jul 18" or null, confidence 50-92, thesis=1 sentence max.`;
+  const t1='AAPL,MSFT,NVDA,TSLA,META,AMZN,GOOGL,AMD,SPY,QQQ,PLTR,SOFI,F,COIN,NFLX,DIS,UBER,SNAP,GME,AMC,HOOD,RIVN,MARA,RIOT,JPM';
+  const t2='INTC,BA,GS,WMT,COST,PFE,JNJ,XOM,CVX,NIO,SHOP,SQ,PYPL,BABA,LCID,SMCI,DELL,CRWD,NET,RBLX,DKNG,OPEN,CLOV,SNDL,BBBY';
   try{
-    // Fetch batch 1, show progress, then fetch batch 2 sequentially (not parallel — avoids rate limits)
-    document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 1 of 2…</div>';
-    const t1=await apiFetch(k,makePrompt(1,tickers1),3500);
-    const b1=safeParseJSON(t1);
-
-    document.getElementById('picksGrid').innerHTML='<div class="loading-state"><i class="ti ti-loader-2"></i>Loading picks — batch 2 of 2…</div>';
-    const t2=await apiFetch(k,makePrompt(2,tickers2),3500);
-    const b2=safeParseJSON(t2);
-
-    allPicks=[...b1,...b2];                        // merge both batches into the global array
-    localStorage.setItem(ck,JSON.stringify(allPicks)); // cache for the rest of the day
-    renderPicks();loadBanner(k);                   // render picks and update the scrolling ticker
+    // Fire both batches at the same time
+    const [r1,r2]=await Promise.all([
+      apiFetch(k,makePrompt(1,t1),3000),
+      apiFetch(k,makePrompt(2,t2),3000)
+    ]);
+    allPicks=[...safeParseJSON(r1),...safeParseJSON(r2)];
+    localStorage.setItem(ck,JSON.stringify(allPicks));
+    renderPicks();
   }catch(e){
-    // Error state: shows the API error message with retry and key-update buttons
     document.getElementById('picksGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Could not load picks</strong><br><span style="font-size:13px;color:var(--text2)">${e.message}</span><br><br><button class="buy-btn btn-primary" style="max-width:180px;margin:0 auto 8px" onclick="loadPicks(true)"><i class="ti ti-refresh"></i> Try again</button><br><button class="buy-btn btn-secondary" style="max-width:180px;margin:0 auto" onclick="showApiModal()"><i class="ti ti-key"></i> Update API key</button></div>`;
   }
 }
 
 // ── EARNINGS CALLS ────────────────────────────────────────────
-let starterStocks=[]; // global array for the Starter Stocks tab data (declared here, populated by loadStarterStocks)
-
-// loadEarnings: fetches 8 upcoming earnings cards from Claude; caches by date
-// Each card tells the user whether the earnings call is worth positioning before (hot/watch/avoid)
+let starterStocks=[];
 async function loadEarnings(force=false){
   const k=getApiKey();if(!k){showApiModal();return;}
   const ck='pt_earnings_'+today.toISOString().slice(0,10);
@@ -1247,11 +865,6 @@ Rules: verdict="hot"|"watch"|"avoid". strategyType="bullish"|"bearish"|"neutral"
     document.getElementById('earningsGrid').innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Failed to load earnings.</strong><br><span style="font-size:12px;color:var(--text2)">${e.message}</span><br><button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadEarnings(true)"><i class="ti ti-refresh"></i> Retry</button></div>`;
   }
 }
-// renderEarnings: builds earnings card HTML from the Claude-parsed data array
-//   vc  — verdict CSS class (colors the verdict badge: hot=amber, watch=blue, avoid=grey)
-//   lc  — left-border accent class on the card (.hot/.watch/.avoid)
-//   sc  — strategy block CSS class (green=bullish, red=bearish, grey=neutral)
-//   sl  — strategy label string with emoji
 function renderEarnings(data){
   document.getElementById('earningsGrid').innerHTML=data.map(e=>{
     const vc={'hot':'verdict-hot','watch':'verdict-watch','avoid':'verdict-avoid'}[e.verdict]||'verdict-avoid';
@@ -1263,8 +876,6 @@ function renderEarnings(data){
 }
 
 // ── MARKET PULSE ──────────────────────────────────────────────
-// loadPulse: fetches political/social/meme/macro catalysts that are moving stocks right now
-// Returns 3 things from Claude in one call: summary text, 8-ticker heatmap, and 6 catalyst cards
 async function loadPulse(force=false){
   const k=getApiKey();if(!k){showApiModal();return;}
   const ck='pt_pulse_v1_'+today.toISOString().slice(0,10);
@@ -1286,10 +897,6 @@ Rules: exactly 6 catalysts, category one of: political,social,earnings,insider,m
     pulseLoaded=true;
   }catch(e){document.getElementById('pulseGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i><strong>Failed to load pulse.</strong><br><button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadPulse(true)">Retry</button></div>`;}
 }
-// renderPulseCards: builds the Breaking Catalysts card grid
-//   cc — CSS class for the colored category badge (political/social/earnings/insider/meme/macro)
-//   ci — Tabler icon class for that category badge
-//   mc — expected-move color (green if bullish/+, red otherwise)
 function renderPulseCards(cats){
   if(!cats||!cats.length){document.getElementById('pulseGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1">No catalysts found.</div>';return;}
   document.getElementById('pulseGrid').innerHTML=cats.map(c=>{
@@ -1298,17 +905,13 @@ function renderPulseCards(cats){
     return `<div class="pulse-card"><div class="pulse-card-top"><div class="pulse-meta"><span class="catalyst-badge ${cc}"><i class="ti ${ci}" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>${c.category}</span><span class="pulse-time">${c.timeAgo}</span><span class="pulse-source">${c.source}</span></div><div class="pulse-ticker-row"><div class="ticker-logo" style="${tickerStyle(c.ticker)};width:35px;height:35px;border-radius:8px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.ticker.slice(0,3)}</div><div><div class="pulse-ticker">${c.ticker}</div><div class="pulse-company">${c.company}</div></div><div style="margin-left:auto;text-align:right"><div class="pulse-move" style="color:${mc}">${c.expectedMove}</div><div style="font-size:10px;color:var(--text3)">expected move</div></div></div><div class="pulse-headline">${c.headline}</div><div class="pulse-summary">${c.summary}</div><div class="pulse-action"><div class="pulse-action-lbl"><i class="ti ti-bulb" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>What to do</div>${c.action}</div></div><div class="pulse-card-foot"><a href="https://robinhood.com/stocks/${c.ticker}" target="_blank" class="pulse-btn btn-primary"><i class="ti ti-external-link"></i> Trade</a><a href="https://twitter.com/search?q=${encodeURIComponent('$'+c.ticker)}&f=live" target="_blank" class="pulse-btn btn-secondary"><i class="ti ti-brand-twitter"></i> X buzz</a><a href="https://www.google.com/search?q=${encodeURIComponent(c.ticker+' '+c.headline)}" target="_blank" class="pulse-btn btn-secondary"><i class="ti ti-news"></i> News</a></div></div>`;
   }).join('');
 }
-// renderHeatmap: builds the Social Buzz Heatmap bar chart
-// Normalizes each ticker's score against the highest score so the top bar is always 100% wide
 function renderHeatmap(tickers){
   if(!tickers||!tickers.length){document.getElementById('heatTable').innerHTML='';return;}
-  const max=Math.max(...tickers.map(t=>t.score)); // find the highest score for normalization
+  const max=Math.max(...tickers.map(t=>t.score));
   document.getElementById('heatTable').innerHTML=`<div>${tickers.map((t,i)=>`<div class="heat-row"><span class="heat-rank">#${i+1}</span><span class="heat-ticker">${t.ticker}</span><span class="heat-co">${t.company}</span><div class="heat-bar-wrap"><div class="heat-bar" style="width:${Math.round(t.score/max*100)}%"></div></div><span class="heat-score">${t.score}</span></div>`).join('')}</div>`;
 }
 
 // ── STARTER STOCKS ────────────────────────────────────────────
-// loadStarterStocks: fetches 28 beginner-friendly stocks across all price ranges from Claude
-// Plain-English "why", sell signals, and risk level — aimed at first-time investors
 async function loadStarterStocks(force=false){
   const k=getApiKey();if(!k){showApiModal();return;}
   const ck='pt_starter_'+today.toISOString().slice(0,10);
@@ -1338,18 +941,14 @@ Rules:
     renderStarterCards();starterLoaded=true;
   }catch(e){document.getElementById('blistGrid').innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle" style="color:var(--danger-text)"></i>Failed. <button class="buy-btn btn-primary" style="max-width:140px;margin:8px auto 0" onclick="loadStarterStocks(true)">Retry</button></div>`;}
 }
-// renderStarterCards: filters starterStocks by the active bFilter pill and rebuilds the card grid
-//   ptMap      — maps priceCategory string → CSS class for the price-range tag chip
-//   ptLabel    — maps priceCategory string → human-readable label (e.g. "$10–$50")
-//   riskColor  — maps risk level → CSS color variable for the risk label text
 function renderStarterCards(){
   const filtered=starterStocks.filter(s=>{
     if(bFilter==='all')return true;
     if(bFilter==='long')return s.horizon==='long';
     if(bFilter==='short')return s.horizon==='short';
-    return s.priceCategory===bFilter; // 'penny' | 'low' | 'mid' | 'high' | 'premium'
+    return s.priceCategory===bFilter;
   });
-  document.getElementById('blistCount').textContent=filtered.length; // updates "X picks" label above grid
+  document.getElementById('blistCount').textContent=filtered.length;
   const ptMap={'penny':'price-penny','low':'price-low','mid':'price-mid','high':'price-high','premium':'price-premium'};
   const ptLabel={'penny':'$2–$10','low':'$10–$50','mid':'$50–$500','high':'$500–$5k','premium':'$5k+'};
   const riskColor={'low':'var(--success-text)','medium':'var(--warning-text)','high':'var(--danger-text)'};
@@ -1382,8 +981,6 @@ function renderStarterCards(){
 }
 
 // ── OPTIONS 101 PICKS ─────────────────────────────────────────
-// loadOptionsPicks: fetches specific option contract examples for each budget tier (micro/starter/mid/advanced)
-// Includes strike, expiry, cost per contract, and plain-English sell rules for each pick
 async function loadOptionsPicks(){
   const k=getApiKey();if(!k){showApiModal();return;}
   const ck='pt_optpicks_'+today.toISOString().slice(0,10);
@@ -1412,9 +1009,6 @@ Rules:
     renderOptPicks(d);optLoaded=true;
   }catch(e){['micro','starter','mid','advanced'].forEach(t=>{const el=document.getElementById(`opt-${t}-picks`);if(el)el.innerHTML=`<div class="empty-state"><i class="ti ti-alert-circle"></i>Failed. <button class="buy-btn btn-primary" style="max-width:130px;margin:6px auto 0" onclick="loadOptionsPicks()">Retry</button></div>`;});}
 }
-// renderOptPicks: iterates over the 4 budget tiers and injects option pick cards into each panel's grid
-//   tierMap   — maps tier key → CSS class for the colored tier badge chip
-//   tierLabel — maps tier key → dollar range label shown on the badge
 function renderOptPicks(data){
   const tierMap={'micro':'tier-micro','starter':'tier-starter','mid':'tier-mid','advanced':'tier-advanced'};
   const tierLabel={'micro':'$20–$100','starter':'$100–$500','mid':'$500–$2k','advanced':'$2k+'};
@@ -1442,14 +1036,19 @@ function renderOptPicks(data){
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-// Runs immediately on page load:
-//   1. Populate the Past Outcomes table from hardcoded data (no API needed)
-//   2. If an API key is already stored → load today's picks + update the ticker banner
-//   3. If no key yet → open the API key modal so the user can enter one
 renderOutcomes();
 const storedKey=getApiKey();
-if(storedKey){loadPicks();loadBanner(storedKey);}
-else{showApiModal();}
+if(storedKey){
+  // Fire all tabs simultaneously on load — no waiting for tab clicks
+  Promise.all([
+    loadPicks(),
+    loadBanner(storedKey),
+    loadEarnings(),
+    loadPulse(),
+    loadStarterStocks(),
+    loadOptionsPicks()
+  ]);
+}else{showApiModal();}
 </script>
 </body>
 </html>
